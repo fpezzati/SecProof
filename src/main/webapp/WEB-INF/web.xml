@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+		 http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+	version="3.1">
+	
+	<context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>WEB-INF/cxf.config.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>
+              org.springframework.web.context.ContextLoaderListener
+        </listener-class>
+    </listener>
+     
+    <servlet>
+        <servlet-name>CXFServlet</servlet-name>
+        <servlet-class>
+              org.apache.cxf.transport.servlet.CXFServlet
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <!-- Path is url-pattern + cxf.config.xml jaxrs:server address + class @Path + method @Path -->
+    <!-- it looks that jaxrs:server address and class @Path are redundant.. I cannot see any use for now -->
+    <servlet-mapping>
+        <servlet-name>CXFServlet</servlet-name>
+        <url-pattern>/srv/*</url-pattern>
+    </servlet-mapping>
+	
+<!-- 	<login-config> -->
+<!-- 		<auth-method>BASIC</auth-method> -->
+<!-- 	</login-config> -->
+	
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+</web-app>
