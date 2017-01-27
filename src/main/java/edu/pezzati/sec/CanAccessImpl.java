@@ -13,7 +13,7 @@ public class CanAccessImpl {
     private Logger log = Logger.getLogger(getClass());
 
     @AroundInvoke
-    public Object canAccess(InvocationContext context) throws Exception {
+    public Object intercept(InvocationContext context) throws Exception {
 	log.debug(context.getMethod().getName() + " invoked.");
 	SecurityManager sManager = System.getSecurityManager();
 	Object securityContext = sManager.getSecurityContext();
