@@ -1,10 +1,35 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>Security proof of concept</title>
-</head>
-<body>
- Security.
-</body>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="google-signin-client_id" content="276167503151-kagq8r83sdfhnslhfccjdu81rtn2dscr.apps.googleusercontent.com">
+		<title>Security proof of concept</title>
+		<script src="https://apis.google.com/js/platform.js" async defer></script>
+	</head>
+	<body>
+		Security.
+		<div class="g-signin2" data-onsuccess="onSignIn"></div>
+		<a href="#" onclick="signOut();">Sign out</a>
+	</body>
+	<script type="text/javascript">
+		function onSignIn(googleUser) {
+			var profile = googleUser.getBasicProfile();
+			console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+			console.log('Name: ' + profile.getName());
+			console.log('Image URL: ' + profile.getImageUrl());
+			console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+			
+			var postReq = new XMLHttpRequest();
+			postReq.open("POST", "./srv/login/google", true);
+// 			postReq.setRequestHeader("Content-type", "application/json");
+			postReq.send(googleUser.getAuthResponse().id_token);
+		}
+		
+		function signOut() {
+		    var auth2 = gapi.auth2.getAuthInstance();
+		    auth2.signOut().then(function () {
+		      console.log('User signed out.');
+		    });
+		  }
+	</script>
 </html>
