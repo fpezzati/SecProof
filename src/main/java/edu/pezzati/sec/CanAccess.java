@@ -11,5 +11,4 @@ import javax.interceptor.InterceptorBinding;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })
 public @interface CanAccess {
-
 }
