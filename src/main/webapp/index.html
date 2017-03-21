@@ -3,16 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google-signin-client_id"
-	content="276167503151-kagq8r83sdfhnslhfccjdu81rtn2dscr.apps.googleusercontent.com">
+	content="276167503151-u1k7lgvd642u650dm3pflql6qj6ok049.apps.googleusercontent.com">
 <title>Security proof of concept</title>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body>
 	Security.
 	<div class="g-signin2" data-onsuccess="onSignIn"></div>
+	<div>
 	<a href="#" onclick="signOut();">Sign out</a>
 	<a href="#" onclick="resourceA();">Resource A</a>
 	<a href="#" onclick="resourceB();">Resource B</a>
+	</div>
+	<div>
+	<a href="./srv/login/now">Login Server side</a>
+	<a href="./srv/logout/now">Logout Server side</a>
+	</div>
 </body>
 <script type="text/javascript">
 		var token;
@@ -26,9 +32,9 @@
 			token = googleUser.getAuthResponse().id_token;
 			
 			var postReq = new XMLHttpRequest();
-			postReq.open("POST", "./srv/login/google", true);
+			postReq.open("POST", "./srv/login/token", true);
 			postReq.setRequestHeader("token", token);
-			postReq.send(googleUser.getAuthResponse().id_token);
+			postReq.send(token);
 		}
 		
 		function signOut() {
@@ -36,6 +42,8 @@
 		    auth2.signOut().then(function () {
 		      console.log('User signed out.');
 			});
+		    
+		    token = null;
 		}
 		
 		function resourceA() {
