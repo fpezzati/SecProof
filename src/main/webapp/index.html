@@ -16,7 +16,7 @@
 	<a href="#" onclick="resourceB();">Resource B</a>
 	</div>
 	<div>
-	<a href="./srv/login/now">Login Server side</a>
+<!-- 	<a href="./srv/login/now">Login Server side</a> -->
 	<a href="./srv/logout/now">Logout Server side</a>
 	</div>
 </body>
@@ -32,8 +32,8 @@
 			token = googleUser.getAuthResponse().id_token;
 			
 			var postReq = new XMLHttpRequest();
-			postReq.open("POST", "./srv/login/token", true);
-			postReq.setRequestHeader("token", token);
+			postReq.open("POST", "./srv/login/google", true);
+			postReq.setRequestHeader("Accept", "application/json");
 			postReq.send(token);
 		}
 		

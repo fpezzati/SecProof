@@ -1,29 +1,37 @@
 package edu.pezzati.sec;
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.Base64;
 
-import javax.inject.Inject;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.apache.ApacheHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+
+import edu.pezzati.sec.model.Token;
+import edu.pezzati.sec.model.User;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 @Path("/login")
 public class SSOIdentityService {
 
     private Logger log = Logger.getLogger(getClass());
-    private String clientId = System.getProperty("google.clientid");
-    @Inject
-    private ServletContext servletContext;
+    private String jwtSecret = new String(Base64.getEncoder().encode(System.getProperty("jwt.shared.secret").getBytes()));
+    private String clientId = System.getProperty("google.client.id");
 
     @Path("/token")
     @POST
@@ -32,28 +40,29 @@ public class SSOIdentityService {
     }
 
     @Path("/google")
-    @GET
-    public void getGoogleToken(@Context HttpServletResponse resp, @QueryParam("code") String token) throws IOException {
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getGoogleToken(@Context HttpServletResponse resp, String token) throws Exception {
 	log.info("Got this token: " + token);
-	resp.sendRedirect(servletContext.getContextPath());
+	Token jwtToken = getJwtToken(getUser(getGoogleToken(token)));
+	return Response.ok().entity(jwtToken).build();
     }
 
-    @Path("/now")
-    @GET
-    public void loginByGoogle(@Context HttpServletResponse resp) throws IOException {
-	String url = new GoogleAuthorizationCodeRequestUrl(clientId, "http://localhost:8080/SecProof/srv/login/google",
-		Arrays.asList("https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"))
-			.build();
-	resp.sendRedirect(url);
+    private Token getJwtToken(User user) {
+	return new Token(Jwts.builder().setSubject(user.getUsername()).signWith(SignatureAlgorithm.HS512, jwtSecret).compact());
     }
 
-    /**
-     * https://accounts.google.com/o/oauth2/iframerpc?action=issueToken&
-     * response_type=token%20id_token&scope=openid%20profile%20email&client_id=
-     * 276167503151-u1k7lgvd642u650dm3pflql6qj6ok049.apps.googleusercontent.com&
-     * login_hint=AJDLj6JUa8yxXrhHdWRHIV0S13cAcEe-
-     * kRicaRTibSzBLBnr483f6JMnjaYNnOurnDsMtyY4PaCjl3gx-zwCSg7EevbSEBvhWQ&
-     * ss_domain=http%3A%2F%2Flocalhost%3A8080&origin=http%3A%2F%2Flocalhost%
-     * 3A8080
-     */
+    private User getUser(GoogleIdToken googleToken) {
+	User user = new User();
+	user.setUsername((String) googleToken.getPayload().get("name"));
+	return user;
+    }
+
+    private GoogleIdToken getGoogleToken(String token) throws Exception {
+	HttpTransport transport = new ApacheHttpTransport();
+	JsonFactory jsonFactory = new JacksonFactory();
+	GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory).setAudience(Arrays.asList(clientId))
+		.build();
+	return verifier.verify(token);
+    }
 }
