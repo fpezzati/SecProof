@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google-signin-client_id"
-	content="yourId">
+	content="276167503151-u1k7lgvd642u650dm3pflql6qj6ok049.apps.googleusercontent.com">
 <title>Security proof of concept</title>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
@@ -14,7 +14,9 @@
 	<a href="#" onclick="signOut();">Sign out</a>
 	<a href="#" onclick="resourceA();">Resource A</a>
 	<a href="#" onclick="resourceB();">Resource B</a>
+	<a href="#" onclick="refreshToken();">Resource B</a>
 	</div>
+	<div id="feedback"></div>
 	<div>
 	<a href="./srv/logout/now">Logout Server side</a>
 	</div>
@@ -28,9 +30,8 @@
 			console.log('Name: ' + profile.getName());
 			console.log('Image URL: ' + profile.getImageUrl());
 			console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-			
 			googletoken = googleUser.getAuthResponse().id_token;
-			
+
 			var postReq = new XMLHttpRequest();
 			postReq.onreadystatechange = function() {
 				if(postReq.readyState == XMLHttpRequest.DONE) {
@@ -67,6 +68,22 @@
 			getB.open("GET", "./srv/boundary/resourceB", true);
 			getB.setRequestHeader("token", jwttoken);
 			getB.send();
+		}
+		
+		function refreshToken() {
+			var refresh = new XMLHttpRequest();
+			refresh.open("PUT", "./srv/login/refresh", true);
+			refresh.setRequestHeader("token", jwttoken);
+			refresh.send();
+			refresh.onreadystatechange = function() {
+				if(refresh.readyState == XMLHttpRequest.DONE) {
+					if(refresh.status == 200) {
+						jwttoken = JSON.parse(refresh.responseText).token;
+					} else {
+						console.log("something goes not as expected. STATUS = "+refresh.status);
+					}
+				}
+			}
 		}
 	</script>
 </html>

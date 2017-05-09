@@ -1,13 +1,11 @@
 # Security Proof of Concept
 This is a sandbox to use AOP in a javaSE webapp to run on Tomcat. I also add auth by Google and JWT.
 
-## Docker notes
-Go to the root of this project. Build the image by this command:
-```
-docker build -t secproof -f ./src/main/resources/docker/tomcat/Dockerfile --build-arg webapp=SecProof.war .
-```
-then run with:
-```
-docker run -p 8080:8080 secproof
-```
-Here you go. You have a tomcat image with the app deployed.
+## No token store. Let the front-end does refresh the token
+This is a web token scenario. As title says, back-end does not store the token on logout or password change. Token has a very short life expectation, this will ensure (maybe) that front-end will behave consistently when user change password or perform logout.
+
+### Token expiration
+Back-end generates short living tokens and expose an endpoint about refreshing them. It is up to the front-end to refresh it's token. Short live tokens means fast token rotation.
+
+### Logout and password change
+Back-end does not provide any token blacklist. Token will early goes invalid by expiration and user will be forced to login again.

@@ -28,8 +28,11 @@ public class JwtTokenProvider {
 	return user;
     }
 
-    public Token refreshToken(Token expiredToken) throws Exception {
+    public Token refreshToken(Token aboutToExpireToken) throws Exception {
+	return getJwtToken(verifyToken(aboutToExpireToken.getJwtToken()));
+    }
 
-	return null;
+    public Token parseJwtToken(String jwtToken) {
+	return new Token(jwtToken);
     }
 }

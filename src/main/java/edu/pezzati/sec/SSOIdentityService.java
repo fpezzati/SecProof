@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -46,6 +47,14 @@ public class SSOIdentityService {
     public Response getGoogleToken(@Context HttpServletResponse resp, String token) throws Exception {
 	log.info("Got this token: " + token);
 	Token jwtToken = jwtTokenProvider.getJwtToken(getUser(getGoogleToken(token)));
+	return Response.ok().entity(jwtToken).build();
+    }
+
+    @Path("/refresh")
+    @PUT
+    public Response refreshToken(@Context HttpServletRequest req) throws Exception {
+	String token = req.getHeader("token");
+	Token jwtToken = jwtTokenProvider.refreshToken(jwtTokenProvider.parseJwtToken(token));
 	return Response.ok().entity(jwtToken).build();
     }
 
