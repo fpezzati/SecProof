@@ -1,8 +1,8 @@
 package edu.pezzati.sec;
 
 import java.util.Arrays;
-import java.util.Base64;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.POST;
@@ -23,15 +23,16 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 
 import edu.pezzati.sec.model.Token;
 import edu.pezzati.sec.model.User;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import edu.pezzati.sec.token.JwtTokenProvider;
 
 @Path("/login")
 public class SSOIdentityService {
 
     private Logger log = Logger.getLogger(getClass());
-    private String jwtSecret = new String(Base64.getEncoder().encode(System.getProperty("jwt.shared.secret").getBytes()));
     private String clientId = System.getProperty("google.client.id");
+
+    @Inject
+    private JwtTokenProvider jwtTokenProvider;
 
     @Path("/token")
     @POST
@@ -44,12 +45,8 @@ public class SSOIdentityService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGoogleToken(@Context HttpServletResponse resp, String token) throws Exception {
 	log.info("Got this token: " + token);
-	Token jwtToken = getJwtToken(getUser(getGoogleToken(token)));
+	Token jwtToken = jwtTokenProvider.getJwtToken(getUser(getGoogleToken(token)));
 	return Response.ok().entity(jwtToken).build();
-    }
-
-    private Token getJwtToken(User user) {
-	return new Token(Jwts.builder().setSubject(user.getUsername()).signWith(SignatureAlgorithm.HS512, jwtSecret).compact());
     }
 
     private User getUser(GoogleIdToken googleToken) {

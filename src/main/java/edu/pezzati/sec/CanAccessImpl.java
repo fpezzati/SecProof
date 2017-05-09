@@ -5,13 +5,13 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
+import edu.pezzati.sec.token.JwtTokenProvider;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
 @CanAccess
 @Interceptor
@@ -20,19 +20,22 @@ public class CanAccessImpl {
     private Logger log = Logger.getLogger(getClass());
     @Inject
     private HttpServletRequest httpServletRequest;
+    @Inject
+    private JwtTokenProvider jwtTokenProvider;
 
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
 	log.debug(context.getMethod().getName() + " invoked.");
 	String token = httpServletRequest.getHeader("token");
-	verifyToken(token);
-	return context.proceed();
-    }
-
-    private void verifyToken(String token) throws Exception {
-	GoogleIdTokenVerifier tokenVerifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).build();
-	GoogleIdToken validToken = tokenVerifier.verify(token);
-	String username = (String) validToken.getPayload().get("name");
-	log.debug("User " + username + " landed on.");
+	try {
+	    jwtTokenProvider.verifyToken(token);
+	    return context.proceed();
+	} catch (ExpiredJwtException expired) {
+	    return Response.status(401).entity("Token has expired. Please login again.").build();
+	} catch (JwtException invalid) {
+	    return Response.status(403).entity("Token is invalid. Please login again.").build();
+	} catch (Exception generic) {
+	    return Response.status(500).entity("Application error. Please login again.").build();
+	}
     }
 }
