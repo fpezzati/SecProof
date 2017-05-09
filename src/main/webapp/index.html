@@ -3,19 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google-signin-client_id"
-	content="put-your-application-id">
+	content="276167503151-u1k7lgvd642u650dm3pflql6qj6ok049.apps.googleusercontent.com">
 <title>Security proof of concept</title>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body>
 	Security.
 	<div class="g-signin2" data-onsuccess="onSignIn"></div>
+	<div>
 	<a href="#" onclick="signOut();">Sign out</a>
 	<a href="#" onclick="resourceA();">Resource A</a>
 	<a href="#" onclick="resourceB();">Resource B</a>
+	</div>
+	<div>
+	<a href="./srv/logout/now">Logout Server side</a>
+	</div>
 </body>
 <script type="text/javascript">
-		var token;
+		var googletoken;
+		var jwttoken;
 		function onSignIn(googleUser) {
 			var profile = googleUser.getBasicProfile();
 			console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
@@ -23,12 +29,21 @@
 			console.log('Image URL: ' + profile.getImageUrl());
 			console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
 			
-			token = googleUser.getAuthResponse().id_token;
+			googletoken = googleUser.getAuthResponse().id_token;
 			
 			var postReq = new XMLHttpRequest();
+			postReq.onreadystatechange = function() {
+				if(postReq.readyState == XMLHttpRequest.DONE) {
+					if(postReq.status == 200) {
+						jwttoken = JSON.parse(postReq.responseText).token;
+					} else {
+						console.log("something goes not as expected. STATUS = "+postReq.status);
+					}
+				}
+			}
 			postReq.open("POST", "./srv/login/google", true);
-			postReq.setRequestHeader("token", token);
-			postReq.send(googleUser.getAuthResponse().id_token);
+			postReq.setRequestHeader("Accept", "application/json");
+			postReq.send(googletoken);
 		}
 		
 		function signOut() {
@@ -36,19 +51,21 @@
 		    auth2.signOut().then(function () {
 		      console.log('User signed out.');
 			});
+		    
+		    token = null;
 		}
 		
 		function resourceA() {
 			var getA = new XMLHttpRequest();
 			getA.open("GET", "./srv/boundary/resourceA", true);
-			getA.setRequestHeader("token", token);
+			getA.setRequestHeader("token", jwttoken);
 			getA.send();
 		}
 		
 		function resourceB() {
 			var getB = new XMLHttpRequest();
 			getB.open("GET", "./srv/boundary/resourceB", true);
-			getB.setRequestHeader("token", token);
+			getB.setRequestHeader("token", jwttoken);
 			getB.send();
 		}
 	</script>
