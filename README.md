@@ -1,5 +1,5 @@
 # Security Proof of Concept
-This is a sandbox to use AOP in a javaSE webapp to run on Tomcat
+This is a sandbox to use AOP in a javaSE webapp to run on Tomcat. I also add auth by Google and JWT.
 
 ## Docker notes
 Go to the root of this project. Build the image by this command:
