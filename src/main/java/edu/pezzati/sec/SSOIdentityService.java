@@ -52,6 +52,7 @@ public class SSOIdentityService {
 
     @Path("/refresh")
     @PUT
+    @Produces(MediaType.APPLICATION_JSON)
     public Response refreshToken(@Context HttpServletRequest req) throws Exception {
 	String token = req.getHeader("token");
 	Token jwtToken = jwtTokenProvider.refreshToken(jwtTokenProvider.parseJwtToken(token));
