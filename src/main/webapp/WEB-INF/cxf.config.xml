@@ -8,6 +8,7 @@
 		<jaxrs:serviceBeans>
 			<bean id="fence" class="edu.pezzati.sec.WebBoundary"/>
 			<bean id="auth" class="edu.pezzati.sec.SSOIdentityService"/>
+			<bean id="off" class="edu.pezzati.sec.UserUtilService"/>
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="secjsonprovider"/>

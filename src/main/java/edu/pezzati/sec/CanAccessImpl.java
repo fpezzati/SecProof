@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 
 import edu.pezzati.sec.token.JwtTokenProvider;
+import edu.pezzati.sec.token.TokenBlacklist;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 
@@ -22,6 +23,8 @@ public class CanAccessImpl {
     private HttpServletRequest httpServletRequest;
     @Inject
     private JwtTokenProvider jwtTokenProvider;
+    @Inject
+    private TokenBlacklist blackList;
 
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
@@ -29,6 +32,8 @@ public class CanAccessImpl {
 	String token = httpServletRequest.getHeader("token");
 	try {
 	    jwtTokenProvider.verifyToken(token);
+	    if (blackList.isInBlacklist(jwtTokenProvider.getJwtToken(token)))
+		throw new JwtException("Token is invalid.");
 	    return context.proceed();
 	} catch (ExpiredJwtException expired) {
 	    return Response.status(401).entity("Token has expired. Please login again.").build();

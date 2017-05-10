@@ -17,8 +17,10 @@ public class JwtTokenProvider {
 
     public Token getJwtToken(User user) {
 	Date exp = new Date(System.currentTimeMillis() + tokenLifetime * 1000);
-	return new Token(
+	Token token = new Token(
 		Jwts.builder().setSubject(user.getUsername()).signWith(SignatureAlgorithm.HS512, jwtSecret).setExpiration(exp).compact());
+	token.setExpires(exp);
+	return token;
     }
 
     public User verifyToken(String token) throws SignatureException, JwtException, Exception {
@@ -26,5 +28,13 @@ public class JwtTokenProvider {
 	User user = new User();
 	user.setUsername(username);
 	return user;
+    }
+
+    public Token getJwtToken(String token) throws SignatureException, JwtException, Exception {
+	Token jwtToken = new Token();
+	Date expires = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getExpiration();
+	jwtToken.setJwtToken(token);
+	jwtToken.setExpires(expires);
+	return jwtToken;
     }
 }

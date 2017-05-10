@@ -1,13 +1,11 @@
 # Security Proof of Concept
 This is a sandbox to use AOP in a javaSE webapp to run on Tomcat. I also add auth by Google and JWT.
 
-## Docker notes
-Go to the root of this project. Build the image by this command:
-```
-docker build -t secproof -f ./src/main/resources/docker/tomcat/Dockerfile --build-arg webapp=SecProof.war .
-```
-then run with:
-```
-docker run -p 8080:8080 secproof
-```
-Here you go. You have a tomcat image with the app deployed.
+## Invalid tokens will be stored in a blacklist
+In this token scenario back-end is responsible to keep a blacklist about tokens who become invalid because of a logout or password change.
+
+## Token expiration
+Back-end will generate long-living tokens. Token refresh is out of scope here.
+
+## Logout and password change
+Blacklist should provide consistent tool to explicit invalidate token when user call for a logout or do a password change. Solution drawback is blacklist burden of course. You have to make it HA if you want blacklist works in a clustered environment.

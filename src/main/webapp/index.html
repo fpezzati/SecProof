@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google-signin-client_id"
-	content="yourId">
+	content=276167503151-u1k7lgvd642u650dm3pflql6qj6ok049.apps.googleusercontent.com>
 <title>Security proof of concept</title>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
@@ -11,12 +11,13 @@
 	Security.
 	<div class="g-signin2" data-onsuccess="onSignIn"></div>
 	<div>
-	<a href="#" onclick="signOut();">Sign out</a>
-	<a href="#" onclick="resourceA();">Resource A</a>
+	<a href="#" onclick="signOut();">Google sign out</a><br>
+	<a href="#" onclick="resourceA();">Resource A</a><br>
 	<a href="#" onclick="resourceB();">Resource B</a>
 	</div>
 	<div>
-	<a href="./srv/logout/now">Logout Server side</a>
+	<a href="#" onclick="logout()"=>Logout</a><br>
+	<a href="#" onclick="reset()">Change password</a>
 	</div>
 </body>
 <script type="text/javascript">
@@ -51,7 +52,6 @@
 		    auth2.signOut().then(function () {
 		      console.log('User signed out.');
 			});
-		    
 		    token = null;
 		}
 		
@@ -67,6 +67,22 @@
 			getB.open("GET", "./srv/boundary/resourceB", true);
 			getB.setRequestHeader("token", jwttoken);
 			getB.send();
+		}
+		
+		function logout() {
+			var logout = new XMLHttpRequest();
+			logout.open("GET", "./srv/user/logout", true);
+			logout.setRequestHeader("token", jwttoken);
+			logout.send();
+			jwttoken = null;
+		}
+		
+		function reset() {
+			var reset = new XMLHttpRequest();
+			reset.open("GET", "./srv/user/reset", true);
+			reset.setRequestHeader("token", jwttoken);
+			reset.send();
+			jwttoken = null;
 		}
 	</script>
 </html>
