@@ -27,9 +27,4 @@ public class JwtTokenProvider {
 	user.setUsername(username);
 	return user;
     }
-
-    public Token refreshToken(Token expiredToken) throws Exception {
-
-	return null;
-    }
 }
