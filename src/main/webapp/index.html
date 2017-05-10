@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google-signin-client_id"
-	content="yourId">
+	content="276167503151-u1k7lgvd642u650dm3pflql6qj6ok049.apps.googleusercontent.com">
 <title>Security proof of concept</title>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
@@ -55,11 +55,25 @@
 		    token = null;
 		}
 		
+		function updateToken(request) {
+			if(request.readyState == XMLHttpRequest.DONE) {
+				if(request.status == 200) {
+					if(request.getResponseHeader("token") != null || request.getResponseHeader("token") != "") {
+						jwttoken = request.getResponseHeader("token");
+						console.log("jwttoken has been refreshed = "+jwttoken);
+					}
+				}
+			}
+		}
+		
 		function resourceA() {
 			var getA = new XMLHttpRequest();
 			getA.open("GET", "./srv/boundary/resourceA", true);
 			getA.setRequestHeader("token", jwttoken);
 			getA.send();
+			getA.onreadystatechange = function() {
+				updateToken(getA);
+			}
 		}
 		
 		function resourceB() {
@@ -67,6 +81,9 @@
 			getB.open("GET", "./srv/boundary/resourceB", true);
 			getB.setRequestHeader("token", jwttoken);
 			getB.send();
+			getB.onreadystatechange = function() {
+				updateToken(getB);
+			} 
 		}
 	</script>
 </html>

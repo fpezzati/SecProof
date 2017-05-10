@@ -29,12 +29,20 @@ public class CanAccessImpl {
 	String token = httpServletRequest.getHeader("token");
 	try {
 	    jwtTokenProvider.verifyToken(token);
+	    if (jwtTokenProvider.isAboutToExpire(token)) {
+		Response response = (Response) context.proceed();
+		response.getHeaders().putSingle("token", jwtTokenProvider.refreshToken(token).getJwtToken());
+		return response;
+	    }
 	    return context.proceed();
 	} catch (ExpiredJwtException expired) {
+	    log.error(expired);
 	    return Response.status(401).entity("Token has expired. Please login again.").build();
 	} catch (JwtException invalid) {
+	    log.error(invalid);
 	    return Response.status(403).entity("Token is invalid. Please login again.").build();
 	} catch (Exception generic) {
+	    log.fatal(generic);
 	    return Response.status(500).entity("Application error. Please login again.").build();
 	}
     }

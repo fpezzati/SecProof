@@ -13,6 +13,7 @@ import io.jsonwebtoken.SignatureException;
 public class JwtTokenProvider {
 
     private final long tokenLifetime = Long.parseLong(System.getProperty("jwt.token.lifetime"));
+    private long idletime = Long.parseLong(System.getProperty("jwt.token.idletime"));
     private final String jwtSecret = new String(Base64.getEncoder().encode(System.getProperty("jwt.shared.secret").getBytes()));
 
     public Token getJwtToken(User user) {
@@ -28,8 +29,16 @@ public class JwtTokenProvider {
 	return user;
     }
 
-    public Token refreshToken(Token expiredToken) throws Exception {
+    public boolean isAboutToExpire(String token) {
+	Date tokenExpiration = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getExpiration();
+	return tokenExpiration.after(new Date(System.currentTimeMillis() - idletime * 1000));
+    }
 
-	return null;
+    public Token refreshToken(Token expiredToken) throws Exception {
+	return getJwtToken(verifyToken(expiredToken.getJwtToken()));
+    }
+
+    public Token refreshToken(String token) throws Exception {
+	return getJwtToken(verifyToken(token));
     }
 }
