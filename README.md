@@ -7,3 +7,11 @@ Well, I must confess I don't known if this is a good idea..
 
 ## Logout and password reset 
 Short live token (should) ensure that user who would like to log out or reset password will not get a refreshed token, so his/her token will expire shortly forcing a new login.
+
+### Notice
+Remember to specify the following properties:
+1. jwt.shared.secret (a string)
+2. jwt.token.lifetime (a number representing how long in seconds a token should last before expire)
+3. jwt.token.idletime (max time in seconds a token can live before being refreshed)
+ 
+example: ... -Djwt.shared.secret=supersecretpassphrase -Djwt.token.lifetime=30 -Djwt.token.idletime=15
