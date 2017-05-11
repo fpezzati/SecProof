@@ -9,3 +9,10 @@ Back-end generates short living tokens and expose an endpoint about refreshing t
 
 ### Logout and password change
 Back-end does not provide any token blacklist. Token will early goes invalid by expiration and user will be forced to login again.
+
+### Notice
+Remember to provide front-end (the index.html file) with your google-signin-client-id. You must also specify the following properties:
+1. jwt.shared.secret (a string)
+2. jwt.token.lifetime (a number representing how long in seconds a token should last before expire)
+ 
+example: ... -Djwt.shared.secret=supersecretpassphrase -Djwt.token.lifetime=30
