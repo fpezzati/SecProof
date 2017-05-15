@@ -75,6 +75,14 @@ public class SimplePDPTest {
 	Assert.assertEquals(expectedDecision, actualDecision);
     }
 
+    public void evaluatePermittXacmlRequest() {
+
+    }
+
+    public void evaluateDenyXacmlRequest() {
+
+    }
+
     private RequestCtx buildRequest() throws URISyntaxException {
 	Set<Attributes> setOfAttributesSet = new HashSet<>();
 	URI category = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:resource");
