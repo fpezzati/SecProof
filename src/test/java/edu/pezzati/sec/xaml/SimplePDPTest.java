@@ -26,20 +26,21 @@ import org.wso2.balana.xacml3.Attributes;
 
 public class SimplePDPTest {
 
+    private final Logger log = Logger.getLogger(getClass());
     private static final int NOT_APPLICABLE = 3;
     private PDPConfig pdpConfig;
     private PDP simplePDP;
     private File singlePdpConf;
-    private File singlePolicy;
-
-    private final Logger log = Logger.getLogger(getClass());
+    private File singlePolicyMultipleRules;
+    private File singlePolicySingleRule;
 
     @Before
     public void setUp() {
 	System.clearProperty(ConfigurationStore.PDP_CONFIG_PROPERTY);
 	singlePdpConf = new File("src/test/resources/conf/simple.pdp.conf.xml");
 	System.clearProperty(FileBasedPolicyFinderModule.POLICY_DIR_PROPERTY);
-	singlePolicy = new File("src/test/resources/singlepolicy");
+	singlePolicyMultipleRules = new File("src/test/resources/policies");
+	singlePolicySingleRule = new File("src/test/resources/policies");
     }
 
     public void generatePDPWithNullConfiguration() throws URISyntaxException {
@@ -53,7 +54,7 @@ public class SimplePDPTest {
 
     @Test
     public void generatePDPwithSinglePolicy() {
-	System.setProperty(FileBasedPolicyFinderModule.POLICY_DIR_PROPERTY, singlePolicy.getAbsolutePath());
+	System.setProperty(FileBasedPolicyFinderModule.POLICY_DIR_PROPERTY, singlePolicyMultipleRules.getAbsolutePath());
 	Balana balana = Balana.getInstance();
 	pdpConfig = balana.getPdpConfig();
 	simplePDP = new PDP(pdpConfig);
@@ -79,7 +80,8 @@ public class SimplePDPTest {
 
     @Test
     public void thisRequestWillBeEvaluatedAsPermit() {
-
+	pdpConfig = Balana.getInstance().getPdpConfig();
+	simplePDP = new PDP(pdpConfig);
     }
 
     @Test

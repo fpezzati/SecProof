@@ -1,5 +1,5 @@
 # Math
-\\[ x = {-b \pm \sqrt{b^2-4ac} \over 2a} \\]
+$$\{beginequation} x = {-b \pm \sqrt{b^2-4ac} \over 2a} \{endequation}$$
 
 # Fine grained security with XACML
 Ok I start with XACML. I will use version 3.0. Not sure about who is implementing this version, it seems most famous ones (JBoss for example) stick to 2.0 version.
@@ -17,7 +17,7 @@ Why? Well is the first XACML framework who provides it's dependencies in an easy
 org.wso2.balana.ctx.xacml3.RequestCtx should be XACML 3.0 request implementation. It's weird that Balana PDP evaluates requests as string.
 
 ## PDP and how to configure them
-Balana needs some conf to be in idle
+Balana needs some conf to be up and running.
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -36,7 +36,7 @@ Balana needs some conf to be in idle
 </config>
 ```
 
-this config can be used to instantiate the "pdp" PDP... For what?
+this config can be used to instantiate the "pdp" PDP.
 
 ### Policy example
 XACML does not look easy.
