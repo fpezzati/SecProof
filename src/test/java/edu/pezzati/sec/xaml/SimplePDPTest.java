@@ -61,7 +61,7 @@ public class SimplePDPTest {
     }
 
     @Test
-    public void evaluateNotApplicableXacmlRequest() throws URISyntaxException {
+    public void thisRequestWillBeEvaluatedAsNotApplicable() throws URISyntaxException {
 	pdpConfig = Balana.getInstance().getPdpConfig();
 	simplePDP = new PDP(pdpConfig);
 	RequestCtx request = buildRequest();
@@ -70,16 +70,25 @@ public class SimplePDPTest {
 	int expectedSize = 1;
 	int actualSize = results.size();
 	Assert.assertEquals(expectedSize, actualSize);
+	AbstractResult result = results.iterator().next();
+	log.info("Not applicable request: " + "\n" + result.encode());
 	int expectedDecision = NOT_APPLICABLE;
-	int actualDecision = results.iterator().next().getDecision();
+	int actualDecision = result.getDecision();
 	Assert.assertEquals(expectedDecision, actualDecision);
     }
 
-    public void evaluatePermittXacmlRequest() {
+    @Test
+    public void thisRequestWillBeEvaluatedAsPermit() {
 
     }
 
-    public void evaluateDenyXacmlRequest() {
+    @Test
+    public void thisRequestWillBeEvaluatedAsDeny() {
+
+    }
+
+    @Test
+    public void thisRequestWillBeEvaluatedAsIndeterminate() {
 
     }
 

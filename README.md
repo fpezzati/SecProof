@@ -19,7 +19,7 @@ org.wso2.balana.ctx.xacml3.RequestCtx should be XACML 3.0 request implementation
 ## PDP and how to configure them
 Balana needs some conf to be in idle
 
-'''
+```
 <?xml version="1.0" encoding="UTF-8"?>
 <config defaultPDP="pdp" defaultAttributeFactory="attr"
 	defaultCombiningAlgFactory="comb" defaultFunctionFactory="func">
@@ -34,14 +34,14 @@ Balana needs some conf to be in idle
 		<algorithm class="org.wso2.balana.samples.custom.algo.HighestEffectRuleAlg" />
 	</combiningAlgFactory>
 </config>
-'''
+```
 
 this config can be used to instantiate the "pdp" PDP... For what?
 
 ### Policy example
 XACML does not look easy.
 
-'''
+```
 <Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"  PolicyId="sample" RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable" Version="1.0">
    <Description>sample policy</Description>
    <Target></Target>
@@ -95,4 +95,4 @@ XACML does not look easy.
    </Rule>
    <Rule Effect="Deny" RuleId="deny-rule"></Rule>
 </Policy>
-'''
+```
