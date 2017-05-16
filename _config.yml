@@ -1,6 +1,0 @@
-markdown: kramdown
-mathjax: true
-
-kramdown:
-  input: GFM
-  hard_wrap: false
