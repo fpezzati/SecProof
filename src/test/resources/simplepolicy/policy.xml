@@ -29,5 +29,19 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 				</AllOf>
 			</AnyOf>
 		</Target>
+		<Condition>
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+					<AttributeDesignator 
+						DataType="http://www.w3.org/2001/XMLSchema#string" 
+						MustBePresent="true" 
+						Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" 
+						AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"/>
+				</Apply>
+				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">jim@med.example.com</AttributeValue>
+			</Apply>
+		</Condition>
 	</Rule>
+<!-- 	<Rule Effect="Deny" RuleId="Catch-all-untargeted"> -->
+<!-- 	</Rule> -->
 </Policy>

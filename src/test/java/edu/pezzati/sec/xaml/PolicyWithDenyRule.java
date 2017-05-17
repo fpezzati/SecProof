@@ -21,33 +21,21 @@ import org.wso2.balana.ctx.xacml3.RequestCtx;
 import org.wso2.balana.xacml3.Attributes;
 
 /**
- * Just everyone will show "med.example.com" in their username will have a
- * PERMIT as response.
+ * Let's see if I got something about XACML. Here there are two tests who run
+ * two requests against a policy (policywithdenyrule/policy.xml). Because of the
+ * policy I expect that one test will produce a PERMIT response and the other
+ * test will produce a DENY one. Only user jim@med.example.com will grant a
+ * PERMIT.
  * 
  * @author fpezzati
  */
-public class SinglePolicyTest extends XacmlTest {
+public class PolicyWithDenyRule extends XacmlTest {
 
     private final Logger log = Logger.getLogger(getClass());
 
     @BeforeClass
     public static void init() {
-	pDP = getPDP(new File("src/test/resources/simplepolicy"));
-    }
-
-    @Test
-    public void thisRequestWillBeEvaluatedAsNotApplicable() throws URISyntaxException {
-	RequestCtx request = buildNotApplicableRequest();
-	ResponseCtx response = pDP.evaluate(request);
-	Set<AbstractResult> results = response.getResults();
-	int expectedSize = 1;
-	int actualSize = results.size();
-	Assert.assertEquals(expectedSize, actualSize);
-	AbstractResult result = results.iterator().next();
-	log.info("NOT_APPLICABLE result: " + "\n" + result.encode());
-	int expectedDecision = NOT_APPLICABLE;
-	int actualDecision = result.getDecision();
-	Assert.assertEquals(expectedDecision, actualDecision);
+	pDP = getPDP(new File("src/test/resources/policywithdenyrule"));
     }
 
     @Test
@@ -65,16 +53,19 @@ public class SinglePolicyTest extends XacmlTest {
 	Assert.assertEquals(expectedDecision, actualDecision);
     }
 
-    private RequestCtx buildNotApplicableRequest() throws URISyntaxException {
-	Set<Attributes> setOfAttributesSet = new HashSet<>();
-	URI category = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:resource");
-	Set<Attribute> attributes = new HashSet<>();
-	attributes.add(new Attribute(new URI("attribute.id.1"), "the issuer", new DateTimeAttribute(), new StringAttribute("friends"), 1));
-	Attributes attributeSet = new Attributes(category, attributes);
-	setOfAttributesSet.add(attributeSet);
-	Node documentRoot = null;
-	RequestCtx request = new RequestCtx(setOfAttributesSet, documentRoot);
-	return request;
+    @Test
+    public void thisRequestWillBeEvaluatedAsDeny() throws URISyntaxException {
+	RequestCtx request = buildDenyRequest();
+	ResponseCtx response = pDP.evaluate(request);
+	Set<AbstractResult> results = response.getResults();
+	int expectedSize = 1;
+	int actualSize = results.size();
+	Assert.assertEquals(expectedSize, actualSize);
+	AbstractResult result = results.iterator().next();
+	log.info("DENY result: " + "\n" + result.encode());
+	int expectedDecision = DENY;
+	int actualDecision = result.getDecision();
+	Assert.assertEquals(expectedDecision, actualDecision);
     }
 
     private RequestCtx buildPermitRequest() throws URISyntaxException {
@@ -85,6 +76,21 @@ public class SinglePolicyTest extends XacmlTest {
 		new RFC822NameAttribute("jim@med.example.com"), 1));
 	attributes.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
 		new StringAttribute("jim@med.example.com"), 1));
+	Attributes attributeSet = new Attributes(category, attributes);
+	setOfAttributesSet.add(attributeSet);
+	Node documentRoot = null;
+	RequestCtx request = new RequestCtx(setOfAttributesSet, documentRoot);
+	return request;
+    }
+
+    private RequestCtx buildDenyRequest() throws URISyntaxException {
+	Set<Attributes> setOfAttributesSet = new HashSet<>();
+	URI category = new URI("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
+	Set<Attribute> attributes = new HashSet<>();
+	attributes.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
+		new RFC822NameAttribute("joe@med.example.com"), 1));
+	attributes.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
+		new StringAttribute("joe@med.example.com"), 1));
 	Attributes attributeSet = new Attributes(category, attributes);
 	setOfAttributesSet.add(attributeSet);
 	Node documentRoot = null;
