@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.w3c.dom.Node;
 import org.wso2.balana.attr.DateTimeAttribute;
 import org.wso2.balana.attr.RFC822NameAttribute;
-import org.wso2.balana.attr.StringAttribute;
 import org.wso2.balana.ctx.AbstractResult;
 import org.wso2.balana.ctx.Attribute;
 import org.wso2.balana.ctx.ResponseCtx;
@@ -74,8 +73,6 @@ public class PolicyWithDenyRule extends XacmlTest {
 	Set<Attribute> attributes = new HashSet<>();
 	attributes.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
 		new RFC822NameAttribute("jim@med.example.com"), 1));
-	attributes.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
-		new StringAttribute("jim@med.example.com"), 1));
 	Attributes attributeSet = new Attributes(category, attributes);
 	setOfAttributesSet.add(attributeSet);
 	Node documentRoot = null;
@@ -89,8 +86,6 @@ public class PolicyWithDenyRule extends XacmlTest {
 	Set<Attribute> attributes = new HashSet<>();
 	attributes.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
 		new RFC822NameAttribute("joe@med.example.com"), 1));
-	attributes.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
-		new StringAttribute("joe@med.example.com"), 1));
 	Attributes attributeSet = new Attributes(category, attributes);
 	setOfAttributesSet.add(attributeSet);
 	Node documentRoot = null;
