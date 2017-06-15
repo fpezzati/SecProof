@@ -4,11 +4,7 @@
 	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation=" http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
 
-	<jaxrs:server id="sec" address="/">
-		<jaxrs:serviceBeans>
-			<bean id="fence" class="edu.pezzati.sec.WebBoundary"/>
-			<bean id="auth" class="edu.pezzati.sec.SSOIdentityService"/>
-		</jaxrs:serviceBeans>
+	<jaxrs:server id="sec" basePackages="edu.pezzati.sec" address="/">
 		<jaxrs:providers>
 			<ref bean="secjsonprovider"/>
 		</jaxrs:providers>
