@@ -108,6 +108,11 @@
 			<version>${balana.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.wso2.balana</groupId>
+			<artifactId>org.wso2.balana.utils</artifactId>
+			<version>${balana.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>

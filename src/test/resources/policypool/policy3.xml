@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySetId="edu:secp:roles:policies3"
+	Version="1.0"
+	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides">
+	<Target>
+		<AnyOf>
+			<AllOf />
+		</AnyOf>
+	</Target>
+	<Policy PolicyId="edu:secp:roleA:policy1"
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
+		<Description>Policy about resourceA</Description>
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">resourceA</AttributeValue>
+						<AttributeDesignator MustBePresent="false"
+							Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+							AttributeId="edu:sec:resource:resourceA" DataType="urn:oasis:names:tc:xacml:1.0:data-type:string" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<Rule RuleId="edu:secp:resourceA:rule1" Effect="Permit">
+			<Description>User can perform action actionA on resource resourceA</Description>
+			<Target></Target>
+			<Condition>
+				<Apply
+					FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of">
+					<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">userA</AttributeValue>
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">userB</AttributeValue>
+					</Apply>
+					<AttributeDesignator AttributeId="edu:secp:role"
+						Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+						DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+				</Apply>
+			</Condition>
+
+		</Rule>
+	</Policy>
+	<!-- <Policy -->
+	<!-- PolicyId="edu:secp:userB:policy1" -->
+	<!-- RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides"> -->
+	<!-- <Target> -->
+	<!-- <AnyOf> -->
+	<!-- <AllOf> -->
+	<!-- <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal"> -->
+	<!-- <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">userB</AttributeValue> -->
+	<!-- <AttributeDesignator MustBePresent="false" -->
+	<!-- Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" -->
+	<!-- AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id" -->
+	<!-- DataType="urn:oasis:names:tc:xacml:1.0:data-type:string" /> -->
+	<!-- </Match> -->
+	<!-- </AllOf> -->
+	<!-- </AnyOf> -->
+	<!-- </Target> -->
+	<!-- </Policy> -->
+</PolicySet>

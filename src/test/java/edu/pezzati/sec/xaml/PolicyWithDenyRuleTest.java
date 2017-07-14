@@ -28,7 +28,7 @@ import org.wso2.balana.xacml3.Attributes;
  * 
  * @author fpezzati
  */
-public class PolicyWithDenyRule extends XacmlTest {
+public class PolicyWithDenyRuleTest extends XacmlTest {
 
     private final Logger log = Logger.getLogger(getClass());
 

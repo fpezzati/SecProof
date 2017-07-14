@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:1.0:policy"
+	PolicySetId="urn:edu:resourceA:policies" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides">
+	<Target>
+		<Subjects>
+			<AnySubject />
+		</Subjects>
+		<Resources>
+			<AnyResource />
+		</Resources>
+		<Actions>
+			<AnyAction />
+		</Actions>
+	</Target>
+	<!-- Permissions specifically for the employee role -->
+	<Policy PolicyId="Permissions:specifically:for:the:employee:role" RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
+		<Target>
+			<Subjects>
+				<Subject>
+					<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="xml;string">roleA</AttributeValue>
+						<SubjectAttributeDesignator
+							AttributeId="urn:secproof:attributes:role" DataType="xml;string" />
+					</SubjectMatch>
+				</Subject>
+			</Subjects>
+			<Resources>
+				<AnyResource />
+			</Resources>
+			<Actions>
+				<AnyAction />
+			</Actions>
+		</Target>
+		<!-- Permission to create a purchase order -->
+		<Rule RuleId="edit:resource:resourceA" Effect="Permit">
+			<Target>
+				<Subjects>
+					<AnySubject />
+				</Subjects>
+				<Resources>
+					<Resource>
+						<ResourceMatch MatchId="&function;string-match">
+							<AttributeValue DataType="&xml;string">resourceA</AttributeValue>
+							<ResourceAttributeDesignator
+								AttributeId="&resource;resource-id" DataType="&xml;string" />
+						</ResourceMatch>
+					</Resource>
+				</Resources>
+				<Actions>
+					<Action>
+						<ActionMatch MatchId="&function;string-match">
+							<AttributeValue DataType="&xml;string">create</AttributeValue>
+							<ActionAttributeDesignator AttributeId="&action;action-id"
+								DataType="&xml;string" />
+						</ActionMatch>
+					</Action>
+				</Actions>
+			</Target>
+		</Rule>
+	</Policy>
+</PolicySet>

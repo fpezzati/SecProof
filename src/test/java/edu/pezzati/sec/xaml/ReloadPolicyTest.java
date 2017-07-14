@@ -1,7 +1,6 @@
 package edu.pezzati.sec.xaml;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
@@ -21,15 +20,13 @@ import org.wso2.balana.ctx.xacml3.RequestCtx;
 import org.wso2.balana.finder.impl.FileBasedPolicyFinderModule;
 import org.wso2.balana.xacml3.Attributes;
 
-public class ReloadPolicy extends XacmlTest {
+public class ReloadPolicyTest extends XacmlTest {
 
     private File firstPolicy;
     private File secondPolicy;
 
     /**
-     * Too bad. This test demonstrates Balana as singleton prevents you to
-     * instantiate a PDP with a brand new policy. I have to use reflection and
-     * set to null Balana's private static field to have a new instance.
+     * Balana's PDP can't reload a statically provided policy file.
      * 
      * @throws Exception
      */
@@ -44,16 +41,12 @@ public class ReloadPolicy extends XacmlTest {
 	int expectedResult = XacmlTest.PERMIT;
 	int actualResult = response1.getResults().iterator().next().getDecision();
 	Assert.assertEquals(expectedResult, actualResult);
-	// Refreshing Balana. Just a test..
-	Field balanaInstance = Balana.getInstance().getClass().getDeclaredField("balana");
-	balanaInstance.setAccessible(true);
-	balanaInstance.set(Balana.getInstance(), null);
 	System.setProperty(FileBasedPolicyFinderModule.POLICY_DIR_PROPERTY, secondPolicy.getAbsolutePath());
 	pDP = new PDP(Balana.getInstance().getPdpConfig());
 	ResponseCtx response2 = pDP.evaluate(request);
 	expectedResult = XacmlTest.DENY;
 	actualResult = response2.getResults().iterator().next().getDecision();
-	Assert.assertEquals(expectedResult, actualResult);
+	Assert.assertNotEquals(expectedResult, actualResult);
     }
 
     private RequestCtx buildPermitRequest() throws URISyntaxException {
