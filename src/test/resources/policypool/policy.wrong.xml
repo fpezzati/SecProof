@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<PolicySet xmlns="urn:oasis:names:tc:xacml:1.0:policy"
-	PolicySetId="urn:edu:resourceA:policies" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides">
+<!-- This policies applies to everyone who try to do an operation about resourceA -->
+<PolicySet xmlns="urn:oasis:names:tc:xacml:1.0:policy" PolicySetId="urn:edu:resourceA:policies" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides">
 	<Target>
 		<Subjects>
 			<AnySubject />
@@ -12,7 +12,7 @@
 			<AnyAction />
 		</Actions>
 	</Target>
-	<!-- Permissions specifically for the employee role -->
+	<!-- Create resourceA policy -->
 	<Policy PolicyId="Permissions:specifically:for:the:employee:role" RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
 		<Target>
 			<Subjects>
@@ -58,4 +58,10 @@
 			</Target>
 		</Rule>
 	</Policy>
+	<!-- Read resourceA policy -->
+	<Policy></Policy>
+	<!-- Update resourceA policy -->
+	<Policy></Policy>
+	<!-- Delete resourceA policy -->
+	<Policy></Policy>
 </PolicySet>
