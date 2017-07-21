@@ -1,4 +1,4 @@
-package edu.pezzati.sec.xaml;
+package edu.pezzati.sec.xacml.pip;
 
 import java.io.File;
 import java.net.URI;
@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -26,7 +27,8 @@ import org.wso2.balana.finder.ResourceFinder;
 import org.wso2.balana.finder.impl.FileBasedPolicyFinderModule;
 import org.wso2.balana.xacml3.Attributes;
 
-import edu.pezzati.sec.xaml.pip.PIPRoleFinderModule;
+import edu.pezzati.sec.xacml.XacmlTest;
+import edu.pezzati.sec.xacml.pip.PIPRoleFinderModule;
 
 /**
  * @author pezzati
@@ -52,6 +54,12 @@ public class PIPusageTest extends XacmlTest {
 	PDP pdp = new PDP(pdpConfig);
 	RequestCtx request = buildRequest();
 	ResponseCtx response = pdp.evaluate(request);
+	int expectedResultsSize = 1;
+	int actualResultsSize = response.getResults().size();
+	Assert.assertEquals(expectedResultsSize, actualResultsSize);
+	int expectedDecision = PERMIT;
+	int actualDecision = response.getResults().iterator().next().getDecision();
+	Assert.assertEquals(expectedDecision, actualDecision);
     }
 
     private AttributeFinder getAttributeFinder() throws URISyntaxException {

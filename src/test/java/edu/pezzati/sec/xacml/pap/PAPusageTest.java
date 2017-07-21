@@ -1,4 +1,4 @@
-package edu.pezzati.sec.xaml;
+package edu.pezzati.sec.xacml.pap;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +35,7 @@ import org.wso2.balana.finder.ResourceFinder;
 import org.wso2.balana.utils.Utils;
 import org.wso2.balana.xacml3.Attributes;
 
-import edu.pezzati.sec.xaml.pap.PAPInMemoryModule;
+import edu.pezzati.sec.xacml.pap.PAPInMemoryModule;
 
 public class PAPusageTest {
 

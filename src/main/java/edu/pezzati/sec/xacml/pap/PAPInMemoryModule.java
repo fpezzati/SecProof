@@ -1,4 +1,4 @@
-package edu.pezzati.sec.xaml.pap;
+package edu.pezzati.sec.xacml.pap;
 
 import java.net.URI;
 import java.util.ArrayList;

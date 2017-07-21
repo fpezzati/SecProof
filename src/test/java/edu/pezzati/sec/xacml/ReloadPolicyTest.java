@@ -1,4 +1,4 @@
-package edu.pezzati.sec.xaml;
+package edu.pezzati.sec.xacml;
 
 import java.io.File;
 import java.net.URI;

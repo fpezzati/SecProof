@@ -3,11 +3,11 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17
 http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
-	PolicyId="urn:oasis:names:tc:xacml:3.0:example:PERMITaccesstojoeonly" 
+	PolicyId="urn:oasis:names:tc:xacml:3.0:example:actionA:resourceA" 
 	RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
 	Version="1.0">
 	<Description>
-		Medi Corp access control policy
+		This policy model that you have to provide permissionA or permissionB if you want to perform action actionA on resource resourceA.
 	</Description>
 	<Target />
 	<Rule RuleId="urn:oasis:names:tc:xacml:3.0:example:OnlyJimShallPass"
@@ -17,29 +17,27 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 			<AnyOf>
 				<AllOf>
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">med.example.com</AttributeValue>
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">resourceA</AttributeValue>
 						<AttributeDesignator MustBePresent="false"
-							Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
-							AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
-							DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
+							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+							AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
 					</Match>
 				</AllOf>
 			</AnyOf>
 		</Target>
-<!-- 		<Condition> -->
-<!-- 			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:any-of"> -->
-<!-- 				<Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-equal"/> -->
-<!-- 				<AttributeValue DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name">joe@med.example.com</AttributeValue> -->
-<!-- 				<AttributeDesignator MustBePresent="false" -->
-<!-- 					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" -->
-<!-- 					AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id" -->
-<!-- 					DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" /> -->
-<!-- 			</Apply> -->
-<!-- 		</Condition> -->
 		<Condition>
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">actionA</AttributeValue>
+				<AttributeDesignator MustBePresent="true" 
+					Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" 
+					AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+					DataType="http://www.w3.org/2001/XMLSchema#string" />
+			</Apply>
 			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of">
 				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag">
-					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">create</AttributeValue>
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">permissionA</AttributeValue>
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">permissionB</AttributeValue>
 				</Apply>
 				<AttributeDesignator MustBePresent="true" 
 					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" 
@@ -49,6 +47,7 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 		</Condition>
 	</Rule>
 	<Rule Effect="Deny" RuleId="defaultRule" />
+	<!-- Obbligation retreive user's permission given his username -->
 	<ObligationExpressions>
 		<ObligationExpression FulfillOn="Permit" ObligationId="edu.pezzati.xacml.3.obbligation.1">
 			<AttributeAssignmentExpression AttributeId="urn:oasis:names:tc:xacml:3.0:example:attribute:text">
