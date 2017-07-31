@@ -35,8 +35,12 @@ import org.wso2.balana.finder.ResourceFinder;
 import org.wso2.balana.utils.Utils;
 import org.wso2.balana.xacml3.Attributes;
 
-import edu.pezzati.sec.xacml.pap.PAPInMemoryModule;
-
+/**
+ * Test class to show how to load policies by PAP module and change policies on
+ * the fly to have a different behavior.
+ * 
+ * @author pezzati
+ */
 public class PAPusageTest {
 
     private static File policy1;

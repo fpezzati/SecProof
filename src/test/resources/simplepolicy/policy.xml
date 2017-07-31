@@ -42,6 +42,4 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 			</Apply>
 		</Condition>
 	</Rule>
-<!-- 	<Rule Effect="Deny" RuleId="Catch-all-untargeted"> -->
-<!-- 	</Rule> -->
 </Policy>

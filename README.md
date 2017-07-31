@@ -1,23 +1,21 @@
-# Math
-$$ x = {-b \pm \sqrt{b^2-4ac} \over 2a} $$
-
 # Fine grained security with XACML
 Ok I start with XACML. I will use version 3.0. Not sure about who is implementing this version, it seems most famous ones (JBoss for example) stick to 2.0 version.
-XACML consist in PEP, PDP and policies.
+XACML consist in PEP, PAP, PIP, PDP and policies.
  * PEP (Policy Enforcement Point) is where one or more policies condition must be met,
+ * PAP (Policy Administration Point) here you manage your policies. Policies aren't immutables, they change as your need changes,
+ * PIP (Policy Information Point) is where you collect additional attributes to be evaluated. To trigger a PIP you must use an `Obbligation` in your policy,
  * PDP (Policy Decision Point) is where attributes are evaluated by conditions,
  * policies are conditions, requirements you must met to be able to do something.
 
 ## Writing PEP
-PEP is where authorization check should be triggered.
+PEP is where authorization check should be triggered. For now I choose to use CDI AOP to implement PEP.
 
 ## Ok I go for Balana
 Why? Well is the first XACML framework who provides it's dependencies in an easy way... But can't find docs...
-
-org.wso2.balana.ctx.xacml3.RequestCtx should be XACML 3.0 request implementation. It's weird that Balana PDP evaluates requests as string.
+As PEP is boundary of XACML, PAP, PIP and PDP are strictly platform dependent.
 
 ## PDP and how to configure them
-Balana needs some conf to be up and running.
+Balana gives you a simple PDP needs some conf to be up and running.
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>

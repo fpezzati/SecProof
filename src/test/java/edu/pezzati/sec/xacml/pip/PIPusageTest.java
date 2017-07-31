@@ -1,6 +1,5 @@
 package edu.pezzati.sec.xacml.pip;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -28,21 +27,21 @@ import org.wso2.balana.finder.impl.FileBasedPolicyFinderModule;
 import org.wso2.balana.xacml3.Attributes;
 
 import edu.pezzati.sec.xacml.XacmlTest;
-import edu.pezzati.sec.xacml.pip.PIPRoleFinderModule;
 
 /**
+ * This test wants to provide an example about using a PIP to retreive user's
+ * roles by his username. Test is build on top of Balana.
+ * 
  * @author pezzati
  */
 public class PIPusageTest extends XacmlTest {
 
-    /**
-     * This test wants to provide an example about using a PIP to retreive
-     * user's roles by his username. Test is build on top of Balana.
-     */
+    private static Set<String> policyLocations;
+
     @BeforeClass
     public static void initTest() {
-	File policies = new File("src/test/resources/policypool/policy1.with.obligations.xml");
-	System.setProperty(FileBasedPolicyFinderModule.POLICY_DIR_PROPERTY, policies.getAbsolutePath());
+	policyLocations = new HashSet<>();
+	policyLocations.add("src/test/resources/policypool/policy1.with.obligations.xml");
     }
 
     @Test
@@ -73,7 +72,7 @@ public class PIPusageTest extends XacmlTest {
     private PolicyFinder getPolicyFinder() {
 	PolicyFinder policyFinder = new PolicyFinder();
 	Set<PolicyFinderModule> modules = new HashSet<>();
-	PolicyFinderModule policyFinderModule = new FileBasedPolicyFinderModule();
+	PolicyFinderModule policyFinderModule = new FileBasedPolicyFinderModule(policyLocations);
 	modules.add(policyFinderModule);
 	policyFinder.setModules(modules);
 	return policyFinder;

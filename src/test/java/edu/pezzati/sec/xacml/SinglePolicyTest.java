@@ -1,6 +1,5 @@
 package edu.pezzati.sec.xacml;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
@@ -8,9 +7,11 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
+import org.wso2.balana.PDP;
+import org.wso2.balana.PDPConfig;
 import org.wso2.balana.attr.DateTimeAttribute;
 import org.wso2.balana.attr.RFC822NameAttribute;
 import org.wso2.balana.attr.StringAttribute;
@@ -18,6 +19,8 @@ import org.wso2.balana.ctx.AbstractResult;
 import org.wso2.balana.ctx.Attribute;
 import org.wso2.balana.ctx.ResponseCtx;
 import org.wso2.balana.ctx.xacml3.RequestCtx;
+import org.wso2.balana.finder.AttributeFinder;
+import org.wso2.balana.finder.ResourceFinder;
 import org.wso2.balana.xacml3.Attributes;
 
 /**
@@ -28,11 +31,15 @@ import org.wso2.balana.xacml3.Attributes;
  */
 public class SinglePolicyTest extends XacmlTest {
 
+    private PDP pDP;
     private final Logger log = Logger.getLogger(getClass());
 
-    @BeforeClass
-    public static void init() {
-	pDP = getPDP(new File("src/test/resources/simplepolicy"));
+    @Before
+    public void setUp() {
+	Set<String> policyLocations = new HashSet<>();
+	policyLocations.add("src/test/resources/simplepolicy");
+	PDPConfig PDPConfig = new PDPConfig(new AttributeFinder(), getPolicyFinder(policyLocations), new ResourceFinder());
+	pDP = new PDP(PDPConfig);
     }
 
     @Test
