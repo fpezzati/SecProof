@@ -3,11 +3,13 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17
 http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
-	PolicyId="urn:oasis:names:tc:xacml:3.0:example:BalanaAuthTest1" 
+	PolicyId="urn:oasis:names:tc:xacml:3.0:example:BalanaAuthTest1"
 	RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
 	Version="1.0">
 	<Description>
 		This policy is used by BalanaAuthTest.
+		By this policy I want to restrict read action to resource resourceA to only those users who had permission 
+		READA or WRITEA.
 	</Description>
 	<Target />
 	<Rule RuleId="urn:oasis:names:tc:xacml:3.0:example:OnlyJimShallPass"
@@ -16,24 +18,45 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 		<Target>
 			<AnyOf>
 				<AllOf>
-					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">READ</AttributeValue>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
 						<AttributeDesignator MustBePresent="false"
-							Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
-							AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
-							DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
+							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
+							AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</Match>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">resourceA</AttributeValue>
+						<AttributeDesignator MustBePresent="false"
+							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+							AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
 					</Match>
 				</AllOf>
 			</AnyOf>
 		</Target>
 		<Condition>
 			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:any-of">
-				<Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-equal"/>
-				<AttributeValue DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name">joe@med.example.com</AttributeValue>
+				<Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-equal" />
+				<AttributeValue DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name">joe@med.example.com
+				</AttributeValue>
 				<AttributeDesignator MustBePresent="false"
 					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
 					AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
 					DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
+			</Apply>
+		</Condition>
+		
+		<Condition>
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of">
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag">
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">READA</AttributeValue>
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">WRITEA</AttributeValue>
+				</Apply>
+				<AttributeDesignator MustBePresent="true" 
+					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" 
+					AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+					DataType="http://www.w3.org/2001/XMLSchema#string" />
 			</Apply>
 		</Condition>
 	</Rule>

@@ -15,26 +15,7 @@ Why? Well is the first XACML framework who provides it's dependencies in an easy
 As PEP is boundary of XACML, PAP, PIP and PDP are strictly platform dependent.
 
 ## PDP and how to configure them
-Balana gives you a simple PDP needs some conf to be up and running.
-
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<config defaultPDP="pdp" defaultAttributeFactory="attr"
-	defaultCombiningAlgFactory="comb" defaultFunctionFactory="func">
-	<pdp name="pdp">
-		<attributeFinderModule class="org.wso2.balana.finder.impl.CurrentEnvModule" />
-		<attributeFinderModule class="org.wso2.balana.finder.impl.SelectorModule" />
-	</pdp>
-	<attributeFactory name="attr" useStandardDatatypes="true" />
-	<functionFactory name="func" useStandardFunctions="true" />
-	<combiningAlgFactory name="comb"
-		useStandardAlgorithms="true">
-		<algorithm class="org.wso2.balana.samples.custom.algo.HighestEffectRuleAlg" />
-	</combiningAlgFactory>
-</config>
-```
-
-this config can be used to instantiate the "pdp" PDP.
+Balana provides a PDP who accept three types of utility modules: `AttributeFinder`, `PolicyFinder` and `ResourceFinder`. I don't find any need of `ResourceFinder` for now, maybe in future.. `AttributeFinder` and `PolicyFinder` are responsible to resolve requests about additional attributes and retreive policies. If an attribute is required, `AttributeFinder` asks for it at every `AttributeFinderModule` it encapsulate. `PolicyFinder` is responsible to find policies your PDP should use. Policies could be stored in a database, your `PolicyFinder` will find them and load into PDP. So, `AttributeFinder` and `PolicyFinder` are both very important and respectively related to PIP and PAP.
 
 ### Policy example
 XACML does not look easy.
@@ -94,3 +75,8 @@ XACML does not look easy.
    <Rule Effect="Deny" RuleId="deny-rule"></Rule>
 </Policy>
 ```
+
+### Attributes
+Are the very important data in requests. Attributes are evaluated agains policies to have a response: DENY, PERMIT, NOT_APPLICABLE or INDETERMINATE.
+### AttributeDesignator
+Indicated in policies. Its scope is to retreive an attribute from a request to allow a condition to evaluate it.
