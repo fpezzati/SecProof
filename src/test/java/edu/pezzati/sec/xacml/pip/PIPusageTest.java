@@ -27,6 +27,7 @@ import org.wso2.balana.finder.impl.FileBasedPolicyFinderModule;
 import org.wso2.balana.xacml3.Attributes;
 
 import edu.pezzati.sec.xacml.XacmlTest;
+import edu.pezzati.sec.xacml.balana.pip.PIPRoleFinderModule;
 
 /**
  * This test wants to provide an example about using a PIP to retreive user's

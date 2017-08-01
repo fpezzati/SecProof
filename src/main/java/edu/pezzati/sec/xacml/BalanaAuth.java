@@ -3,18 +3,25 @@ package edu.pezzati.sec.xacml;
 import java.util.List;
 import java.util.Set;
 
+import org.wso2.balana.PDP;
 import org.wso2.balana.PDPConfig;
+import org.wso2.balana.ctx.ResponseCtx;
+import org.wso2.balana.ctx.xacml3.RequestCtx;
 import org.wso2.balana.finder.AttributeFinder;
 import org.wso2.balana.finder.AttributeFinderModule;
 import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.ResourceFinder;
 
+import edu.pezzati.sec.xacml.balana.BalanaResponse;
+
 public class BalanaAuth implements AuthorizationGateway {
 
     private Set<PolicyFinderModule> policyModules;
     private List<AttributeFinderModule> attributeModules;
-    private Response response;
+    private BalanaResponse response;
+    private PDPConfig pDPConfig;
+    private PDP pDP;
 
     public void setPolicyFinders(Set<PolicyFinderModule> policyModules) {
 	this.policyModules = policyModules;
@@ -28,7 +35,8 @@ public class BalanaAuth implements AuthorizationGateway {
 	PolicyFinder policyFinder = new PolicyFinder();
 	policyFinder.setModules(policyModules);
 	ResourceFinder resourceFinder = new ResourceFinder();
-	new PDPConfig(attributeFinder, policyFinder, resourceFinder);
+	pDPConfig = new PDPConfig(attributeFinder, policyFinder, resourceFinder);
+	pDP = new PDP(pDPConfig);
     }
 
     /**
@@ -55,5 +63,11 @@ public class BalanaAuth implements AuthorizationGateway {
     @Override
     public Response getResponse() {
 	return response;
+    }
+
+    public void evaluate(RequestCtx request) {
+	ResponseCtx responseCtx = pDP.evaluate(request);
+	response = new BalanaResponse();
+	response.setResponse(responseCtx);
     }
 }

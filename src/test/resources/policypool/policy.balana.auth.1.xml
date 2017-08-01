@@ -12,21 +12,20 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 		READA or WRITEA.
 	</Description>
 	<Target />
-	<Rule RuleId="urn:oasis:names:tc:xacml:3.0:example:OnlyJimShallPass"
+	<Rule RuleId="urn:oasis:names:tc:xacml:3.0:example:ReadResourceA"
 		Effect="Permit">
-		<Description>Any subject with an e-mail name in the med.example.com domain can perform any action on any resource.</Description>
 		<Target>
 			<AnyOf>
 				<AllOf>
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">READ</AttributeValue>
 						<AttributeDesignator MustBePresent="false"
 							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
 							AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
 							DataType="http://www.w3.org/2001/XMLSchema#string" />
 					</Match>
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">resourceA</AttributeValue>
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">RESOURCEA</AttributeValue>
 						<AttributeDesignator MustBePresent="false"
 							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
 							AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
@@ -35,18 +34,6 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 				</AllOf>
 			</AnyOf>
 		</Target>
-		<Condition>
-			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:any-of">
-				<Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-equal" />
-				<AttributeValue DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name">joe@med.example.com
-				</AttributeValue>
-				<AttributeDesignator MustBePresent="false"
-					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
-					AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
-					DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
-			</Apply>
-		</Condition>
-		
 		<Condition>
 			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of">
 				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag">
@@ -60,4 +47,15 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 			</Apply>
 		</Condition>
 	</Rule>
+	<Rule Effect="Deny" RuleId="defaultRule" />
+	<ObligationExpressions>
+		<ObligationExpression FulfillOn="Permit" ObligationId="urn:oasis:names:tc:xacml:3.0:example:obbligation.1">
+			<AttributeAssignmentExpression AttributeId="urn:oasis:names:tc:xacml:3.0:example:attribute:text">
+				<AttributeDesignator MustBePresent="false" 
+					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" 
+					AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+					DataType="http://www.w3.org/2001/XMLSchema#string" />
+			</AttributeAssignmentExpression>
+		</ObligationExpression>
+	</ObligationExpressions>
 </Policy>
