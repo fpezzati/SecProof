@@ -17,6 +17,12 @@ As PEP is boundary of XACML, PAP, PIP and PDP are strictly platform dependent.
 ## PDP and how to configure them
 Balana provides a PDP who accept three types of utility modules: `AttributeFinder`, `PolicyFinder` and `ResourceFinder`. I don't find any need of `ResourceFinder` for now, maybe in future.. `AttributeFinder` and `PolicyFinder` are responsible to resolve requests about additional attributes and retreive policies. If an attribute is required, `AttributeFinder` asks for it at every `AttributeFinderModule` it encapsulate. `PolicyFinder` is responsible to find policies your PDP should use. Policies could be stored in a database, your `PolicyFinder` will find them and load into PDP. So, `AttributeFinder` and `PolicyFinder` are both very important and respectively related to PIP and PAP.
 
+## Policy evaluation
+ * Permit:
+ * Deny:
+ * Indeterminate: means that more than one policy got a target that match the given request and PDP does not know how to handle results.
+ * Not Applicable: means that no policy's target is fulfilled by the given request, so PDP has nothing to evaluate against.
+
 ### Policy example
 XACML does not look easy.
 
@@ -77,7 +83,7 @@ XACML does not look easy.
 ```
 
 ### Attributes
-Are the very important data in requests. Attributes are evaluated agains policies to have a response: DENY, PERMIT, NOT_APPLICABLE or INDETERMINATE. Attributes can be uniquely identified by their three mandatory attributes: Category, AttributeId, DataType. To retreive an attribute this way you must use an AttributeDesignator element in your policy.
+Are the very important data in requests. Attributes are evaluated agains policies to have a response: DENY, PERMIT, NOT_APPLICABLE or INDETERMINATE. Attributes can be uniquely identified by their three mandatory attributes: `Category`, `AttributeId`, `DataType`. To retreive an attribute this way you must use an AttributeDesignator element in your policy.
 Categories are these few:
  - urn:oasis:names:tc:xacml:3.0:attribute-category:resource
  - urn:oasis:names:tc:xacml:3.0:attribute-category:action
@@ -88,9 +94,12 @@ Categories are these few:
  - urn:oasis:names:tc:xacml:1.0:subject-category:codebase
  - urn:oasis:names:tc:xacml:1.0:subject-category:requesting-machine
 They are pretty self-explanatory.
-Attribute's AttributeId can be any URI.
+Attribute's `AttributeId` can be any URI.
 
-When PDP evaluate request and did not find attributes that policy wants to evaluate, then (the Balana BasicEvaluationCtx instance) calls for AttributeFinder. AttributeFinder is given during config of PDP. It encapsulates a collection of AttributeFinderModule who are responsible of retreive unspecified but wanted attributes. If you want to pick attributes from an external source (say database) here you go. Write your own AttributeFinderModule implementing its findAttribute method and add it to the AttributeFinder you will use to create the PDPConfig element. 
+When PDP evaluate request and did not find attributes that policy wants to evaluate, then (the Balana `BasicEvaluationCtx` instance) calls for `AttributeFinder`. `AttributeFinder` is given during config of PDP. It encapsulates a collection of `AttributeFinderModule` who are responsible of retreive unspecified but wanted attributes. If you want to pick attributes from an external source (say database) here you go. Write your own `AttributeFinderModule` implementing its `findAttribute` method and add it to the `AttributeFinder` you will use to create the `PDPConfig` element. 
  
 ### AttributeDesignator
 Indicated in policies. Its scope is to retreive an attribute from a request to allow a condition to evaluate it.
+
+## Condition
+Condition can be evaluated as true, false or indeterminate.
