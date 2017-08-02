@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,19 +20,17 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.wso2.balana.AbstractPolicy;
 import org.wso2.balana.Policy;
 import org.wso2.balana.attr.AttributeValue;
+import org.wso2.balana.attr.BagAttribute;
 import org.wso2.balana.attr.DateTimeAttribute;
 import org.wso2.balana.attr.RFC822NameAttribute;
 import org.wso2.balana.attr.StringAttribute;
+import org.wso2.balana.cond.EvaluationResult;
 import org.wso2.balana.ctx.AbstractResult;
 import org.wso2.balana.ctx.Attribute;
 import org.wso2.balana.ctx.xacml3.RequestCtx;
@@ -46,8 +45,6 @@ import edu.pezzati.sec.xacml.balana.BalanaResponse;
 import edu.pezzati.sec.xacml.balana.pap.DatabasePolicyFinder;
 import edu.pezzati.sec.xacml.balana.pip.DatabaseRoleFinder;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ DatabaseRoleFinder.class })
 public class BalanaAuthTest {
 
     @Rule
@@ -67,9 +64,9 @@ public class BalanaAuthTest {
     @Before
     public void initTest() {
 	authGateway = new BalanaAuth();
-	databaseRoleFinder = PowerMockito.mock(DatabaseRoleFinder.class);
-	PowerMockito.when(databaseRoleFinder.isDesignatorSupported()).thenReturn(true);
-	PowerMockito.when(databaseRoleFinder.isSelectorSupported()).thenReturn(false);
+	databaseRoleFinder = Mockito.mock(DatabaseRoleFinder.class);
+	Mockito.when(databaseRoleFinder.isDesignatorSupported()).thenReturn(true);
+	Mockito.when(databaseRoleFinder.isSelectorSupported()).thenReturn(false);
 	databasePolicyFinder = Mockito.mock(DatabasePolicyFinder.class);
 	Mockito.when(databasePolicyFinder.isRequestSupported()).thenReturn(true);
 	Mockito.when(databasePolicyFinder.isIdReferenceSupported()).thenReturn(true);
@@ -158,15 +155,30 @@ public class BalanaAuthTest {
 
     @Test
     public void passRequestWhoWillBeEvaluatedAsPermit() throws Exception {
-	List<AttributeValue> retreivedPermissions = new ArrayList<>();
-	retreivedPermissions.add(new StringAttribute("READA"));
-	retreivedPermissions.add(new StringAttribute("READB"));
-
 	AbstractPolicy policyfound = getPolicyByFile(policy);
 	PolicyFinderResult policyFinderResult = new PolicyFinderResult(policyfound);
 	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
 
-	PowerMockito.doReturn(retreivedPermissions).when(databaseRoleFinder, "retreiveUserPermissions", "alice");
+	Set<String> supportedIds = new HashSet<>(Arrays.asList(new String[] { "urn:oasis:names:tc:xacml:1.0:subject:subject-permission" }));
+	Set<String> supportedCategories = new HashSet<>(
+		Arrays.asList(new String[] { "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" }));
+	Mockito.when(databaseRoleFinder.getSupportedCategories()).thenReturn(supportedCategories);
+	Mockito.when(databaseRoleFinder.getSupportedIds()).thenReturn(supportedIds);
+
+	List<AttributeValue> retreivedPermissions = new ArrayList<>();
+	retreivedPermissions.add(new StringAttribute("READA"));
+	retreivedPermissions.add(new StringAttribute("READB"));
+	URI attributeType = new URI("http://www.w3.org/2001/XMLSchema#string");
+	URI attributeId = new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-permission");
+	String issuer = null;
+	URI category = new URI("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
+	BagAttribute bagPermission = new BagAttribute(new URI("http://www.w3.org/2001/XMLSchema#string"), retreivedPermissions);
+	EvaluationResult evaluationResult = new EvaluationResult(bagPermission);
+
+	Mockito.when(databaseRoleFinder.findAttribute(Mockito.eq(attributeType), Mockito.eq(attributeId), Mockito.eq(issuer),
+		Mockito.eq(category), Mockito.any())).thenReturn(evaluationResult);
+	Mockito.when(databaseRoleFinder.retreiveUserPermissions("alice")).thenReturn(retreivedPermissions);
+
 	Request notApplicableRequest = getPermitRequest();
 	authGateway.init();
 	authGateway.evaluate(notApplicableRequest);

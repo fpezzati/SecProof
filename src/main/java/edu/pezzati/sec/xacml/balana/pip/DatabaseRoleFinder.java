@@ -22,7 +22,7 @@ public abstract class DatabaseRoleFinder extends AttributeFinderModule {
 	supportedCategories = new HashSet<>();
 	supportedCategories.add("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
 	supportedIds = new HashSet<>();
-	supportedIds.add("urn:oasis:names:tc:xacml:1.0:subject:subject-id");
+	supportedIds.add("urn:oasis:names:tc:xacml:1.0:subject:subject-permission");
     }
 
     @Override
@@ -40,7 +40,7 @@ public abstract class DatabaseRoleFinder extends AttributeFinderModule {
 	try {
 	    if (supportedIds.contains(attributeId.toString()) && supportedCategories.contains(category.toString())) {
 		EvaluationResult retreivedAttirbute = context.getAttribute(new URI("http://www.w3.org/2001/XMLSchema#string"),
-			new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null,
+			new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-permission"), null,
 			new URI("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"));
 		AttributeValue retreivedAttributeValue = (AttributeValue) ((BagAttribute) retreivedAttirbute.getAttributeValue()).iterator()
 			.next();
@@ -54,7 +54,7 @@ public abstract class DatabaseRoleFinder extends AttributeFinderModule {
 	}
     }
 
-    protected abstract List<AttributeValue> retreiveUserPermissions(String username);
+    public abstract List<AttributeValue> retreiveUserPermissions(String username);
 
     @Override
     public boolean isSelectorSupported() {

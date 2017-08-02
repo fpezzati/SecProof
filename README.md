@@ -77,6 +77,20 @@ XACML does not look easy.
 ```
 
 ### Attributes
-Are the very important data in requests. Attributes are evaluated agains policies to have a response: DENY, PERMIT, NOT_APPLICABLE or INDETERMINATE.
+Are the very important data in requests. Attributes are evaluated agains policies to have a response: DENY, PERMIT, NOT_APPLICABLE or INDETERMINATE. Attributes can be uniquely identified by their three mandatory attributes: Category, AttributeId, DataType. To retreive an attribute this way you must use an AttributeDesignator element in your policy.
+Categories are these few:
+ - urn:oasis:names:tc:xacml:3.0:attribute-category:resource
+ - urn:oasis:names:tc:xacml:3.0:attribute-category:action
+ - urn:oasis:names:tc:xacml:3.0:attribute-category:environment
+ - urn:oasis:names:tc:xacml:1.0:subject-category:access-subject
+ - urn:oasis:names:tc:xacml:1.0:subject-category:recipient-subject
+ - urn:oasis:names:tc:xacml:1.0:subject-category:intermediary-subject
+ - urn:oasis:names:tc:xacml:1.0:subject-category:codebase
+ - urn:oasis:names:tc:xacml:1.0:subject-category:requesting-machine
+They are pretty self-explanatory.
+Attribute's AttributeId can be any URI.
+
+When PDP evaluate request and did not find attributes that policy wants to evaluate, then (the Balana BasicEvaluationCtx instance) calls for AttributeFinder. AttributeFinder is given during config of PDP. It encapsulates a collection of AttributeFinderModule who are responsible of retreive unspecified but wanted attributes. If you want to pick attributes from an external source (say database) here you go. Write your own AttributeFinderModule implementing its findAttribute method and add it to the AttributeFinder you will use to create the PDPConfig element. 
+ 
 ### AttributeDesignator
 Indicated in policies. Its scope is to retreive an attribute from a request to allow a condition to evaluate it.

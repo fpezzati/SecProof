@@ -42,20 +42,10 @@ http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
 				</Apply>
 				<AttributeDesignator MustBePresent="true" 
 					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" 
-					AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+					AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-permission"
 					DataType="http://www.w3.org/2001/XMLSchema#string" />
 			</Apply>
 		</Condition>
 	</Rule>
 	<Rule Effect="Deny" RuleId="defaultRule" />
-	<ObligationExpressions>
-		<ObligationExpression FulfillOn="Permit" ObligationId="urn:oasis:names:tc:xacml:3.0:example:obbligation.1">
-			<AttributeAssignmentExpression AttributeId="urn:oasis:names:tc:xacml:3.0:example:attribute:text">
-				<AttributeDesignator MustBePresent="false" 
-					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" 
-					AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
-					DataType="http://www.w3.org/2001/XMLSchema#string" />
-			</AttributeAssignmentExpression>
-		</ObligationExpression>
-	</ObligationExpressions>
 </Policy>
