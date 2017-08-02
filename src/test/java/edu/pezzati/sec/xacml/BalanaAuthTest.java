@@ -146,7 +146,7 @@ public class BalanaAuthTest {
 
     @Test
     public void passRequestWhoWillBeEvaluatedAsNotApplicable() throws Exception {
-	loadPolicyWithoutDefaultDenyRule();
+	loadNoPolicyDueToUnmatchingRequest();
 	setUpAliceDatabaseRoleFinderResult();
 	Request notApplicableRequest = getNotApplicableRequest();
 	authGateway.init();
@@ -223,14 +223,19 @@ public class BalanaAuthTest {
 		Mockito.eq(category), Mockito.any())).thenReturn(evaluationResult);
     }
 
-    private void loadSinglePolicyFile() throws Exception {
-	AbstractPolicy policyfound = getPolicyByFile(policy);
-	PolicyFinderResult policyFinderResult = new PolicyFinderResult(policyfound);
+    private void loadNoPolicyDueToUnmatchingRequest() throws Exception {
+	PolicyFinderResult policyFinderResult = new PolicyFinderResult();
 	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
     }
 
     private void loadPolicyWithoutDefaultDenyRule() throws Exception {
 	AbstractPolicy policyfound = getPolicyByFile(policyWithoutDefaultDenyRule);
+	PolicyFinderResult policyFinderResult = new PolicyFinderResult(policyfound);
+	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
+    }
+
+    private void loadSinglePolicyFile() throws Exception {
+	AbstractPolicy policyfound = getPolicyByFile(policy);
 	PolicyFinderResult policyFinderResult = new PolicyFinderResult(policyfound);
 	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
     }

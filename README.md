@@ -22,6 +22,9 @@ Balana provides a PDP who accept three types of utility modules: `AttributeFinde
  * Deny:
  * Indeterminate: means that more than one policy got a target that match the given request and PDP does not know how to handle results.
  * Not Applicable: means that no policy's target is fulfilled by the given request, so PDP has nothing to evaluate against.
+ 
+## Target
+Target tells if given context must be evaluated against current Policy or Rule. It make sense to put Target in policies or policy instead of rules set because the higher you put target the less xml Balana have to parse and evaluate. However Condition, who apply to Rules only, are more expressive and powerful because they use expressions and function to evaluate attributes.
 
 ### Policy example
 XACML does not look easy.
