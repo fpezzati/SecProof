@@ -25,6 +25,11 @@ Balana provides a PDP who accept three types of utility modules: `AttributeFinde
  
 ## Target
 Target tells if given context must be evaluated against current Policy or Rule. It make sense to put Target in policies or policy instead of rules set because the higher you put target the less xml Balana have to parse and evaluate. However Condition, who apply to Rules only, are more expressive and powerful because they use expressions and function to evaluate attributes.
+When Targets apply to policies or policies set, then it is the `PolicyFinder` (by its `PolicyFinderModules`) who evaluate Target and say that policy worth to be used in evaluation.
+
+
+## Condition
+Condition can be evaluated as true, false or indeterminate.
 
 ### Policy example
 XACML does not look easy.
@@ -104,5 +109,5 @@ When PDP evaluate request and did not find attributes that policy wants to evalu
 ### AttributeDesignator
 Indicated in policies. Its scope is to retreive an attribute from a request to allow a condition to evaluate it.
 
-## Condition
-Condition can be evaluated as true, false or indeterminate.
+### PolicySet
+A set of policies and a function to evaluate single policy result.

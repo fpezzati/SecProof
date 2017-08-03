@@ -25,6 +25,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.wso2.balana.AbstractPolicy;
 import org.wso2.balana.Policy;
+import org.wso2.balana.PolicySet;
 import org.wso2.balana.attr.AttributeValue;
 import org.wso2.balana.attr.BagAttribute;
 import org.wso2.balana.attr.DateTimeAttribute;
@@ -42,7 +43,7 @@ import org.wso2.balana.xacml3.Attributes;
 import edu.pezzati.sec.xacml.balana.BalanaRequest;
 import edu.pezzati.sec.xacml.balana.BalanaResponse;
 import edu.pezzati.sec.xacml.balana.pap.DatabasePolicyFinder;
-import edu.pezzati.sec.xacml.balana.pip.DatabaseRoleFinder;
+import edu.pezzati.sec.xacml.balana.pip.DatabasePermissionFinder;
 
 public class BalanaAuthTest {
 
@@ -51,15 +52,15 @@ public class BalanaAuthTest {
     private Set<PolicyFinderModule> policyModules;
     private AuthorizationGateway authGateway;
     private List<AttributeFinderModule> attributeModules;
-    private DatabaseRoleFinder databaseRoleFinder;
+    private DatabasePermissionFinder databaseRoleFinder;
     private DatabasePolicyFinder databasePolicyFinder;
     private static File policy;
-    private static File policyWithoutDefaultDenyRule;
+    private static File policySetCreateDeleteReadResource1;
 
     @BeforeClass
     public static void initTests() {
 	policy = new File("src/test/resources/policypool/policy.balana.auth.1.xml");
-	policyWithoutDefaultDenyRule = new File("src/test/resources/policypool/policy.balana.auth.2.xml");
+	policySetCreateDeleteReadResource1 = new File("src/test/resources/policypool/policy.balana.auth.3.xml");
     }
 
     @Before
@@ -76,7 +77,7 @@ public class BalanaAuthTest {
     }
 
     private void setUpDatabaseRoleFinder() {
-	databaseRoleFinder = Mockito.mock(DatabaseRoleFinder.class);
+	databaseRoleFinder = Mockito.mock(DatabasePermissionFinder.class);
 	Mockito.when(databaseRoleFinder.isDesignatorSupported()).thenReturn(true);
 	Mockito.when(databaseRoleFinder.isSelectorSupported()).thenReturn(false);
 	Set<String> supportedIds = new HashSet<>(Arrays.asList(new String[] { "urn:oasis:names:tc:xacml:1.0:subject:subject-permission" }));
@@ -131,20 +132,6 @@ public class BalanaAuthTest {
     }
 
     @Test
-    public void passRequestWhoWillBeEvaluatedAsIndeterminate() throws Exception {
-	loadPolicyWithoutDefaultDenyRule();
-	setUpAliceDatabaseRoleFinderResult();
-	Request notApplicableRequest = new BalanaRequest();
-	((BalanaRequest) notApplicableRequest).setRequest(new RequestCtx(new HashSet<>(), null));
-	authGateway.init();
-	authGateway.evaluate(notApplicableRequest);
-	Response notApplicableResponse = authGateway.getResponse();
-	int expectedResult = AbstractResult.DECISION_INDETERMINATE;
-	int actualResult = ((BalanaResponse) notApplicableResponse).getResponse().getResults().iterator().next().getDecision();
-	Assert.assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
     public void passRequestWhoWillBeEvaluatedAsNotApplicable() throws Exception {
 	loadNoPolicyDueToUnmatchingRequest();
 	setUpAliceDatabaseRoleFinderResult();
@@ -183,9 +170,48 @@ public class BalanaAuthTest {
 	Assert.assertEquals(expectedResult, actualResult);
     }
 
+    @Test
+    public void passRequestWhoWillBeEvaluatedAsNotApplicableAgainstAPolicySet() throws Exception {
+	loadNoPolicyDueToUnmatchingRequest();
+	setUpAliceDatabaseRoleFinderResult();
+	Request permitRequest = getRequestWhoWillBeEvaluatedAsNotApplicableAgainstPolicySet();
+	authGateway.init();
+	authGateway.evaluate(permitRequest);
+	Response notApplicableResponse = authGateway.getResponse();
+	int expectedResult = AbstractResult.DECISION_NOT_APPLICABLE;
+	int actualResult = ((BalanaResponse) notApplicableResponse).getResponse().getResults().iterator().next().getDecision();
+	Assert.assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void passRequestWhoWillBeEvaluatedAsDenyAgainstAPolicySet() throws Exception {
+	loadPolicySetAboutCreateDeleteReadResource1();
+	setUpBobDatabaseRoleFinderResult();
+	Request permitRequest = getRequestWhoWillBeEvaluatedAsDenyAgainstPolicySet();
+	authGateway.init();
+	authGateway.evaluate(permitRequest);
+	Response notApplicableResponse = authGateway.getResponse();
+	int expectedResult = AbstractResult.DECISION_DENY;
+	int actualResult = ((BalanaResponse) notApplicableResponse).getResponse().getResults().iterator().next().getDecision();
+	Assert.assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void passRequestWhoWillBeEvaluatedAsPermitAgainstAPolicySet() throws Exception {
+	loadPolicySetAboutCreateDeleteReadResource1();
+	setUpAliceDatabaseRoleFinderResult();
+	Request permitRequest = getRequestWhoWillBeEvaluatedAsPermitAgainstPolicySet();
+	authGateway.init();
+	authGateway.evaluate(permitRequest);
+	Response notApplicableResponse = authGateway.getResponse();
+	int expectedResult = AbstractResult.DECISION_PERMIT;
+	int actualResult = ((BalanaResponse) notApplicableResponse).getResponse().getResults().iterator().next().getDecision();
+	Assert.assertEquals(expectedResult, actualResult);
+    }
+
     /**
-     * Here we mock {@link DatabaseRoleFinder} behavior to retreive Alice's
-     * permissions.
+     * Here we mock {@link DatabasePermissionFinder} behavior to retreive
+     * Alice's permissions.
      * 
      * @throws URISyntaxException
      */
@@ -193,6 +219,8 @@ public class BalanaAuthTest {
 	List<AttributeValue> retreivedPermissions = new ArrayList<>();
 	retreivedPermissions.add(new StringAttribute("READA"));
 	retreivedPermissions.add(new StringAttribute("READB"));
+	retreivedPermissions.add(new StringAttribute("CREATE.RESOURCE1"));
+	retreivedPermissions.add(new StringAttribute("GUEST"));
 	URI attributeType = new URI("http://www.w3.org/2001/XMLSchema#string");
 	URI attributeId = new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-permission");
 	String issuer = null;
@@ -204,7 +232,7 @@ public class BalanaAuthTest {
     }
 
     /**
-     * Here we mock {@link DatabaseRoleFinder} behavior to retreive Bob's
+     * Here we mock {@link DatabasePermissionFinder} behavior to retreive Bob's
      * permissions.
      * 
      * @throws URISyntaxException
@@ -223,19 +251,26 @@ public class BalanaAuthTest {
 		Mockito.eq(category), Mockito.any())).thenReturn(evaluationResult);
     }
 
+    private void loadSinglePolicyFile() throws Exception {
+	AbstractPolicy policyfound = getPolicyByFile(policy);
+	PolicyFinderResult policyFinderResult = new PolicyFinderResult(policyfound);
+	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
+    }
+
+    /**
+     * When you put Target at Policy or PolicySet level then PolicyFinder will
+     * evaluate their target to see if they worth to be used in evaluating
+     * requests. So to emulate a scenario where top level Target does not match
+     * with request I have to mock the PolicyFinder to return an empty set of
+     * policies.
+     */
     private void loadNoPolicyDueToUnmatchingRequest() throws Exception {
 	PolicyFinderResult policyFinderResult = new PolicyFinderResult();
 	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
     }
 
-    private void loadPolicyWithoutDefaultDenyRule() throws Exception {
-	AbstractPolicy policyfound = getPolicyByFile(policyWithoutDefaultDenyRule);
-	PolicyFinderResult policyFinderResult = new PolicyFinderResult(policyfound);
-	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
-    }
-
-    private void loadSinglePolicyFile() throws Exception {
-	AbstractPolicy policyfound = getPolicyByFile(policy);
+    private void loadPolicySetAboutCreateDeleteReadResource1() throws Exception {
+	AbstractPolicy policyfound = getPolicySetByFile(policySetCreateDeleteReadResource1);
 	PolicyFinderResult policyFinderResult = new PolicyFinderResult(policyfound);
 	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
     }
@@ -249,6 +284,18 @@ public class BalanaAuthTest {
 	InputStream stream = new FileInputStream(policyFile);
 	Document doc = db.parse(stream);
 	AbstractPolicy policy = Policy.getInstance(doc.getDocumentElement());
+	return policy;
+    }
+
+    private AbstractPolicy getPolicySetByFile(File policyFile) throws Exception {
+	DocumentBuilderFactory factory = Utils.getSecuredDocumentBuilderFactory();
+	factory.setIgnoringComments(true);
+	factory.setNamespaceAware(true);
+	factory.setValidating(false);
+	DocumentBuilder db = factory.newDocumentBuilder();
+	InputStream stream = new FileInputStream(policyFile);
+	Document doc = db.parse(stream);
+	AbstractPolicy policy = PolicySet.getInstance(doc.getDocumentElement());
 	return policy;
     }
 
@@ -281,7 +328,6 @@ public class BalanaAuthTest {
 	RequestCtx requestCtx = new RequestCtx(attributesSet, documentRoot);
 	request.setRequest(requestCtx);
 	return request;
-
     }
 
     private Request getDenyRequest() throws URISyntaxException {
@@ -331,6 +377,99 @@ public class BalanaAuthTest {
 		new StringAttribute("READ"), 1));
 	resourceAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:resource:resource-id"), null, new DateTimeAttribute(),
 		new StringAttribute("RESOURCEA"), 1));
+	URI userCategory = new URI("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
+	URI actionCategory = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:action");
+	URI resourceCategory = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:resource");
+	Attributes userAttributes = new Attributes(userCategory, userAttributeSet);
+	Attributes actionAttributes = new Attributes(actionCategory, actionAttributeSet);
+	Attributes resourceAttributes = new Attributes(resourceCategory, resourceAttributeSet);
+	attributesSet.add(userAttributes);
+	attributesSet.add(actionAttributes);
+	attributesSet.add(resourceAttributes);
+	Node documentRoot = null;
+	RequestCtx requestCtx = new RequestCtx(attributesSet, documentRoot);
+	request.setRequest(requestCtx);
+	return request;
+    }
+
+    private Request getRequestWhoWillBeEvaluatedAsNotApplicableAgainstPolicySet() throws URISyntaxException {
+	BalanaRequest request = new BalanaRequest();
+	Set<Attributes> attributesSet = new HashSet<>();
+	Set<Attribute> userAttributeSet = new HashSet<>();
+	Set<Attribute> actionAttributeSet = new HashSet<>();
+	Set<Attribute> resourceAttributeSet = new HashSet<>();
+	/**
+	 * User Alice wants to do action CREATE about resource RESOURCE2.
+	 * RESOURCE2 is an unknown resource.
+	 */
+	userAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
+		new StringAttribute("Alice"), 1));
+	actionAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:action:required.action"), null, new DateTimeAttribute(),
+		new StringAttribute("READ"), 1));
+	resourceAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:resource:required.resource"), null,
+		new DateTimeAttribute(), new StringAttribute("RESOURCE2"), 1));
+	URI userCategory = new URI("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
+	URI actionCategory = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:action");
+	URI resourceCategory = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:resource");
+	Attributes userAttributes = new Attributes(userCategory, userAttributeSet);
+	Attributes actionAttributes = new Attributes(actionCategory, actionAttributeSet);
+	Attributes resourceAttributes = new Attributes(resourceCategory, resourceAttributeSet);
+	attributesSet.add(userAttributes);
+	attributesSet.add(actionAttributes);
+	attributesSet.add(resourceAttributes);
+	Node documentRoot = null;
+	RequestCtx requestCtx = new RequestCtx(attributesSet, documentRoot);
+	request.setRequest(requestCtx);
+	return request;
+    }
+
+    private Request getRequestWhoWillBeEvaluatedAsDenyAgainstPolicySet() throws URISyntaxException {
+	BalanaRequest request = new BalanaRequest();
+	Set<Attributes> attributesSet = new HashSet<>();
+	Set<Attribute> userAttributeSet = new HashSet<>();
+	Set<Attribute> actionAttributeSet = new HashSet<>();
+	Set<Attribute> resourceAttributeSet = new HashSet<>();
+	/**
+	 * User Bob wants to do action CREATE about resource RESOURCE1. Bob
+	 * won't be allowed to do so.
+	 */
+	userAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
+		new StringAttribute("bob"), 1));
+	actionAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:action:required.action"), null, new DateTimeAttribute(),
+		new StringAttribute("DELETE"), 1));
+	resourceAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:resource:required.resource"), null,
+		new DateTimeAttribute(), new StringAttribute("RESOURCE1"), 1));
+	URI userCategory = new URI("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
+	URI actionCategory = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:action");
+	URI resourceCategory = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:resource");
+	Attributes userAttributes = new Attributes(userCategory, userAttributeSet);
+	Attributes actionAttributes = new Attributes(actionCategory, actionAttributeSet);
+	Attributes resourceAttributes = new Attributes(resourceCategory, resourceAttributeSet);
+	attributesSet.add(userAttributes);
+	attributesSet.add(actionAttributes);
+	attributesSet.add(resourceAttributes);
+	Node documentRoot = null;
+	RequestCtx requestCtx = new RequestCtx(attributesSet, documentRoot);
+	request.setRequest(requestCtx);
+	return request;
+    }
+
+    private Request getRequestWhoWillBeEvaluatedAsPermitAgainstPolicySet() throws URISyntaxException {
+	BalanaRequest request = new BalanaRequest();
+	Set<Attributes> attributesSet = new HashSet<>();
+	Set<Attribute> userAttributeSet = new HashSet<>();
+	Set<Attribute> actionAttributeSet = new HashSet<>();
+	Set<Attribute> resourceAttributeSet = new HashSet<>();
+	/**
+	 * User Alice wants to do action CREATE about resource RESOURCE1. Alice
+	 * will be allowed to do so.
+	 */
+	userAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:subject:subject-id"), null, new DateTimeAttribute(),
+		new StringAttribute("alice"), 1));
+	actionAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:action:required.action"), null, new DateTimeAttribute(),
+		new StringAttribute("CREATE"), 1));
+	resourceAttributeSet.add(new Attribute(new URI("urn:oasis:names:tc:xacml:1.0:resource:required.resource"), null,
+		new DateTimeAttribute(), new StringAttribute("RESOURCE1"), 1));
 	URI userCategory = new URI("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
 	URI actionCategory = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:action");
 	URI resourceCategory = new URI("urn:oasis:names:tc:xacml:3.0:attribute-category:resource");

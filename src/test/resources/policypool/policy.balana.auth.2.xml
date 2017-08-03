@@ -3,13 +3,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17
 http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd"
-	PolicyId="urn:oasis:names:tc:xacml:3.0:example:BalanaAuthTest1"
+	PolicyId="urn:oasis:names:tc:xacml:3.0:example:BalanaAuthTest2"
 	RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
 	Version="1.0">
 	<Description>
-		This policy is used by BalanaAuthTest.
-		By this policy I want to restrict read action to resource resourceA to only those users who had permission 
-		READA or WRITEA.
+		This policy is barely a copy of urn:oasis:names:tc:xacml:3.0:example:BalanaAuthTest1 who is already used by 
+		BalanaAuthTest. The difference lays in the absence of the rule who will always be evaluated as DENY.
+		Purpose of this policy is to have a NOT-APPLICABLE answer when you evaluate a request who does not have any 
+		of the attributes indicated in target.
 	</Description>
 	<Target>
 		<AnyOf>

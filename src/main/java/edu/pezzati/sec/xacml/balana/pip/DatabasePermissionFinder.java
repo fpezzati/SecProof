@@ -13,12 +13,12 @@ import org.wso2.balana.ctx.EvaluationCtx;
 import org.wso2.balana.ctx.Status;
 import org.wso2.balana.finder.AttributeFinderModule;
 
-public abstract class DatabaseRoleFinder extends AttributeFinderModule {
+public abstract class DatabasePermissionFinder extends AttributeFinderModule {
 
     private Set<String> supportedCategories;
     private Set<String> supportedIds;
 
-    public DatabaseRoleFinder() {
+    public DatabasePermissionFinder() {
 	supportedCategories = new HashSet<>();
 	supportedCategories.add("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
 	supportedIds = new HashSet<>();
