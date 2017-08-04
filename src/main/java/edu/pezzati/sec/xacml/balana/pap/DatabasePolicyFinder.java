@@ -9,6 +9,14 @@ import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.PolicyFinderResult;
 
+/**
+ * DatabasePolicyFinder gives the ability to retreive policies and policysets
+ * managed by a PAP on a RDBMS. Policies and policysets share a common XACML
+ * Target structure. This Target structure is also used to store and identify
+ * uniquely policies.
+ * 
+ * @author pezzati
+ */
 public class DatabasePolicyFinder extends PolicyFinderModule {
 
     @Override
@@ -26,6 +34,11 @@ public class DatabasePolicyFinder extends PolicyFinderModule {
 	return true;
     }
 
+    /**
+     * This method retreive a policy by attributes provided by given context.
+     * 
+     * @author pezzati
+     */
     @Override
     public PolicyFinderResult findPolicy(EvaluationCtx context) {
 	//	List<AbstractPolicy> matchingPolicies = new ArrayList<>();
@@ -50,12 +63,4 @@ public class DatabasePolicyFinder extends PolicyFinderModule {
 	//	return retreivePolicies(matchingPolicies);
 	return null;
     }
-
-    //    private PolicyFinderResult retreivePolicies(List<AbstractPolicy> policies) {
-    //	if (policies.size() == 1) {
-    //	    return new PolicyFinderResult(policies.get(0));
-    //	} else {
-    //	    return new PolicyFinderResult(new Status(Arrays.asList(new String[] { Status.STATUS_PROCESSING_ERROR })));
-    //	}
-    //    }
 }

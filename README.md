@@ -110,4 +110,5 @@ When PDP evaluate request and did not find attributes that policy wants to evalu
 Indicated in policies. Its scope is to retreive an attribute from a request to allow a condition to evaluate it.
 
 ### PolicySet
-A set of policies and a function to evaluate single policy result.
+A set of policies and a function to evaluate single policy result. Pay attention: top level policy's Target (or policy set) returned by PolicyFinder will always considered as matched. PDP assumes that if finder returns a Policy or PolicySet that means their target match, so your PolicyFinderModule is responsible to return policies with target who will be evaluated as match by the request.
+Ok I got tests against PolicySet who have PolicyReferenceId. I need to investigate further to be sure about a strange behavior I saw. It seems that if policies are referenced they need an explicit reference about a `PoliciyFinder` object. I think it is weird. Why don't PolicyReferenceId simply uses `PolicyFinder` present in the PDP? Bah.. Let's dig deeper about this.

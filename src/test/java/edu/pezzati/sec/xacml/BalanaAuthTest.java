@@ -34,7 +34,9 @@ import org.wso2.balana.cond.EvaluationResult;
 import org.wso2.balana.ctx.AbstractResult;
 import org.wso2.balana.ctx.Attribute;
 import org.wso2.balana.ctx.xacml3.RequestCtx;
+import org.wso2.balana.finder.AttributeFinder;
 import org.wso2.balana.finder.AttributeFinderModule;
+import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.PolicyFinderResult;
 import org.wso2.balana.utils.Utils;
@@ -47,20 +49,33 @@ import edu.pezzati.sec.xacml.balana.pip.DatabasePermissionFinder;
 
 public class BalanaAuthTest {
 
+    private static final String policyCreateResource1Id = "addResource1";
+    private static final String policyRemoveResource1Id = "removeResource1";
+    private static final String policyReadResource1Id = "readResource1";
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     private Set<PolicyFinderModule> policyModules;
     private AuthorizationGateway authGateway;
+    private PolicyFinder policyFinder;
+    private AttributeFinder attributeFinder;
     private List<AttributeFinderModule> attributeModules;
     private DatabasePermissionFinder databaseRoleFinder;
     private DatabasePolicyFinder databasePolicyFinder;
     private static File policy;
     private static File policySetCreateDeleteReadResource1;
+    private static File policySetCreateDeleteReadResource1MadeByReferences;
+    private static File policyCreateResource1;
+    private static File policyRemoveResource1;
+    private static File policyReadResource1;
 
     @BeforeClass
     public static void initTests() {
 	policy = new File("src/test/resources/policypool/policy.balana.auth.1.xml");
-	policySetCreateDeleteReadResource1 = new File("src/test/resources/policypool/policy.balana.auth.3.xml");
+	policySetCreateDeleteReadResource1 = new File("src/test/resources/policypool/policy.balana.auth.2.xml");
+	policySetCreateDeleteReadResource1MadeByReferences = new File("src/test/resources/policypool/policy.balana.auth.3.xml");
+	policyCreateResource1 = new File("src/test/resources/policypool/policy.create.resource1.xml");
+	policyRemoveResource1 = new File("src/test/resources/policypool/policy.remove.resource1.xml");
+	policyReadResource1 = new File("src/test/resources/policypool/policy.read.resource1.xml");
     }
 
     @Before
@@ -72,8 +87,12 @@ public class BalanaAuthTest {
 	Mockito.when(databasePolicyFinder.isIdReferenceSupported()).thenReturn(true);
 	attributeModules = getAttributeFinderModules();
 	policyModules = getPolicyFinderModules();
-	((BalanaAuth) authGateway).setAttributeFinders(attributeModules);
-	((BalanaAuth) authGateway).setPolicyFinders(policyModules);
+	policyFinder = Mockito.spy(new PolicyFinder());
+	policyFinder.setModules(policyModules);
+	attributeFinder = Mockito.spy(new AttributeFinder());
+	attributeFinder.setModules(attributeModules);
+	((BalanaAuth) authGateway).setAttributeFinder(attributeFinder);
+	((BalanaAuth) authGateway).setPolicyFinder(policyFinder);
     }
 
     private void setUpDatabaseRoleFinder() {
@@ -94,27 +113,49 @@ public class BalanaAuthTest {
      */
     @Test
     public void passANullPolicyFinderSet() {
-	policyModules = null;
-	((BalanaAuth) authGateway).setPolicyFinders(policyModules);
+	policyFinder = null;
+	((BalanaAuth) authGateway).setPolicyFinder(policyFinder);
 	expectedException.expect(IllegalArgumentException.class);
 	authGateway.init();
 	Assert.fail();
     }
 
     @Test
-    public void passAnEmptyPolicyFinderSet() {
+    public void passAnEmptyPolicyFinder() {
+	policyFinder = null;
+	((BalanaAuth) authGateway).setPolicyFinder(policyFinder);
+	expectedException.expect(IllegalArgumentException.class);
+	authGateway.init();
+	Assert.fail();
+    }
+
+    @Test
+    public void passAnEmptyPolicyFinderModuleSet() {
 	policyModules = new HashSet<>();
-	((BalanaAuth) authGateway).setPolicyFinders(policyModules);
+	policyFinder = new PolicyFinder();
+	policyFinder.setModules(policyModules);
+	((BalanaAuth) authGateway).setPolicyFinder(policyFinder);
 	expectedException.expect(IllegalArgumentException.class);
 	authGateway.init();
 	Assert.fail();
     }
 
     @Test
-    public void passANullAttributeFinderSet() {
-	attributeModules = null;
-	((BalanaAuth) authGateway).setAttributeFinders(attributeModules);
+    public void passANullAttributeFinder() {
+	attributeFinder = null;
+	((BalanaAuth) authGateway).setAttributeFinder(attributeFinder);
 	expectedException.expect(IllegalArgumentException.class);
+	authGateway.init();
+	Assert.fail();
+    }
+
+    @Test
+    public void passANullAttributeFinderModuleSet() {
+	attributeModules = null;
+	attributeFinder = new AttributeFinder();
+	expectedException.expect(NullPointerException.class);
+	attributeFinder.setModules(attributeModules);
+	((BalanaAuth) authGateway).setAttributeFinder(attributeFinder);
 	authGateway.init();
 	Assert.fail();
     }
@@ -209,6 +250,48 @@ public class BalanaAuthTest {
 	Assert.assertEquals(expectedResult, actualResult);
     }
 
+    @Test
+    public void passRequestWhoWillBeEvaluatedAsNotApplicableAgainstAPolicySetBuildWithPolicyReferences() throws Exception {
+	loadNoPolicyDueToUnmatchingRequest();
+	loadPoliciesByUriId();
+	setUpAliceDatabaseRoleFinderResult();
+	Request permitRequest = getRequestWhoWillBeEvaluatedAsNotApplicableAgainstPolicySet();
+	authGateway.init();
+	authGateway.evaluate(permitRequest);
+	Response notApplicableResponse = authGateway.getResponse();
+	int expectedResult = AbstractResult.DECISION_NOT_APPLICABLE;
+	int actualResult = ((BalanaResponse) notApplicableResponse).getResponse().getResults().iterator().next().getDecision();
+	Assert.assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void passRequestWhoWillBeEvaluatedAsDenyAgainstAPolicySetBuildWithPolicyReferences() throws Exception {
+	loadPolicySetAboutCreateDeleteReadResource1MadeByReferences(policyFinder);
+	loadPoliciesByUriId();
+	setUpBobDatabaseRoleFinderResult();
+	Request permitRequest = getRequestWhoWillBeEvaluatedAsDenyAgainstPolicySet();
+	authGateway.init();
+	authGateway.evaluate(permitRequest);
+	Response notApplicableResponse = authGateway.getResponse();
+	int expectedResult = AbstractResult.DECISION_DENY;
+	int actualResult = ((BalanaResponse) notApplicableResponse).getResponse().getResults().iterator().next().getDecision();
+	Assert.assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void passRequestWhoWillBeEvaluatedAsPermitAgainstAPolicySetBuildWithPolicyReferences() throws Exception {
+	loadPolicySetAboutCreateDeleteReadResource1MadeByReferences(policyFinder);
+	loadPoliciesByUriId();
+	setUpAliceDatabaseRoleFinderResult();
+	Request permitRequest = getRequestWhoWillBeEvaluatedAsPermitAgainstPolicySet();
+	authGateway.init();
+	authGateway.evaluate(permitRequest);
+	Response notApplicableResponse = authGateway.getResponse();
+	int expectedResult = AbstractResult.DECISION_PERMIT;
+	int actualResult = ((BalanaResponse) notApplicableResponse).getResponse().getResults().iterator().next().getDecision();
+	Assert.assertEquals(expectedResult, actualResult);
+    }
+
     /**
      * Here we mock {@link DatabasePermissionFinder} behavior to retreive
      * Alice's permissions.
@@ -275,6 +358,42 @@ public class BalanaAuthTest {
 	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
     }
 
+    private void loadPolicySetAboutCreateDeleteReadResource1MadeByReferences(PolicyFinder policyFinder) throws Exception {
+	AbstractPolicy policyfound = getPolicySetByFile(policySetCreateDeleteReadResource1MadeByReferences, policyFinder);
+	PolicyFinderResult policyFinderResult = new PolicyFinderResult(policyfound);
+	Mockito.when(databasePolicyFinder.findPolicy(Mockito.any())).thenReturn(policyFinderResult);
+    }
+
+    private void loadCreateResource1Policy() throws Exception {
+	AbstractPolicy policyCreateResource1found = getPolicyByFile(policyCreateResource1);
+	PolicyFinderResult policyCreateResource1Finder = new PolicyFinderResult(policyCreateResource1found);
+	Mockito.when(
+		databasePolicyFinder.findPolicy(Mockito.eq(new URI(policyCreateResource1Id)), Mockito.eq(0), Mockito.any(), Mockito.any()))
+		.thenReturn(policyCreateResource1Finder);
+    }
+
+    private void loadRemoveResource1Policy() throws Exception {
+	AbstractPolicy policyRemoveResource1found = getPolicyByFile(policyRemoveResource1);
+	PolicyFinderResult policyRemoveResource1Finder = new PolicyFinderResult(policyRemoveResource1found);
+	Mockito.when(
+		databasePolicyFinder.findPolicy(Mockito.eq(new URI(policyRemoveResource1Id)), Mockito.eq(0), Mockito.any(), Mockito.any()))
+		.thenReturn(policyRemoveResource1Finder);
+    }
+
+    private void loadReadResource1Policy() throws Exception {
+	AbstractPolicy policyReadResource1found = getPolicyByFile(policyReadResource1);
+	PolicyFinderResult policyReadResource1Finder = new PolicyFinderResult(policyReadResource1found);
+	Mockito.when(
+		databasePolicyFinder.findPolicy(Mockito.eq(new URI(policyReadResource1Id)), Mockito.eq(0), Mockito.any(), Mockito.any()))
+		.thenReturn(policyReadResource1Finder);
+    }
+
+    private void loadPoliciesByUriId() throws Exception {
+	loadCreateResource1Policy();
+	loadRemoveResource1Policy();
+	loadReadResource1Policy();
+    }
+
     private AbstractPolicy getPolicyByFile(File policyFile) throws Exception {
 	DocumentBuilderFactory factory = Utils.getSecuredDocumentBuilderFactory();
 	factory.setIgnoringComments(true);
@@ -288,6 +407,10 @@ public class BalanaAuthTest {
     }
 
     private AbstractPolicy getPolicySetByFile(File policyFile) throws Exception {
+	return getPolicySetByFile(policyFile, null);
+    }
+
+    private AbstractPolicy getPolicySetByFile(File policyFile, PolicyFinder finder) throws Exception {
 	DocumentBuilderFactory factory = Utils.getSecuredDocumentBuilderFactory();
 	factory.setIgnoringComments(true);
 	factory.setNamespaceAware(true);
@@ -295,7 +418,7 @@ public class BalanaAuthTest {
 	DocumentBuilder db = factory.newDocumentBuilder();
 	InputStream stream = new FileInputStream(policyFile);
 	Document doc = db.parse(stream);
-	AbstractPolicy policy = PolicySet.getInstance(doc.getDocumentElement());
+	AbstractPolicy policy = PolicySet.getInstance(doc.getDocumentElement(), finder);
 	return policy;
     }
 
@@ -496,9 +619,4 @@ public class BalanaAuthTest {
 	modules.add(databasePolicyFinder);
 	return modules;
     }
-    //
-    //    private static ResourceFinder getResourceFinder() {
-    //	// TODO Auto-generated method stub
-    //	return null;
-    //    }
 }

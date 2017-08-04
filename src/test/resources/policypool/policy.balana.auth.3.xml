@@ -23,90 +23,9 @@
 			</AllOf>
 		</AnyOf>
 	</Target>
-	<Policy
-		RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
-		PolicyId="addResource1" Version="1.0">
-		<Target>
-			<AnyOf>
-				<AllOf>
-					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">CREATE</AttributeValue>
-						<AttributeDesignator MustBePresent="false"
-							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
-							AttributeId="urn:oasis:names:tc:xacml:1.0:action:required.action"
-							DataType="http://www.w3.org/2001/XMLSchema#string" />
-					</Match>
-				</AllOf>
-			</AnyOf>
-		</Target>
-		<Rule RuleId="urn:oasis:rules:create.resource1" Effect="Permit">
-			<Condition>
-				<Apply
-					FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of">
-					<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ADMINISTRATOR</AttributeValue>
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">CREATE.ALL</AttributeValue>
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">CREATE.RESOURCE1</AttributeValue>
-					</Apply>
-					<AttributeDesignator MustBePresent="false"
-						Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
-						AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-permission"
-						DataType="http://www.w3.org/2001/XMLSchema#string" />
-				</Apply>
-			</Condition>
-		</Rule>
-	</Policy>
-	<Policy
-		RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
-		PolicyId="removeResource1" Version="1.0">
-		<Target>
-			<AnyOf>
-				<AllOf>
-					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">DELETE</AttributeValue>
-						<AttributeDesignator MustBePresent="false"
-							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
-							AttributeId="urn:oasis:names:tc:xacml:1.0:action:required.action"
-							DataType="http://www.w3.org/2001/XMLSchema#string" />
-					</Match>
-				</AllOf>
-			</AnyOf>
-		</Target>
-		<Rule RuleId="urn:oasis:rules:read.resource1" Effect="Permit">
-			<Condition>
-				<Apply
-					FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of">
-					<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ADMINISTRATOR</AttributeValue>
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">CREATE.ALL</AttributeValue>
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">CREATE.RESOURCE1</AttributeValue>
-					</Apply>
-					<AttributeDesignator MustBePresent="false"
-						Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
-						AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-permission"
-						DataType="http://www.w3.org/2001/XMLSchema#string" />
-				</Apply>
-			</Condition>
-		</Rule>
-	</Policy>
-	<Policy
-		RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
-		PolicyId="readResource1" Version="1.0">
-		<Description>Anyone can read this resource</Description>
-		<Target>
-			<AnyOf>
-				<AllOf>
-					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">READ</AttributeValue>
-						<AttributeDesignator MustBePresent="false"
-							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
-							AttributeId="urn:oasis:names:tc:xacml:1.0:action:required.action"
-							DataType="http://www.w3.org/2001/XMLSchema#string" />
-					</Match>
-				</AllOf>
-			</AnyOf>
-		</Target>
-	</Policy>
+	<PolicyIdReference>addResource1</PolicyIdReference>
+	<PolicyIdReference>removeResource1</PolicyIdReference>
+	<PolicyIdReference>readResource1</PolicyIdReference>
 	<Policy
 		RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
 		PolicyId="defaultDeny" Version="1.0">
