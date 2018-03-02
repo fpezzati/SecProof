@@ -24,8 +24,8 @@ import org.wso2.balana.finder.ResourceFinder;
 import org.wso2.balana.xacml3.Attributes;
 
 /**
- * Just everyone will show "med.example.com" in their username will have a
- * PERMIT as response.
+ * Just everyone who have "med.example.com" as substring in their username will
+ * get back a PERMIT as response.
  * 
  * @author fpezzati
  */
