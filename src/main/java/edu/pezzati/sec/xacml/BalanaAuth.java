@@ -32,8 +32,8 @@ public class BalanaAuth implements AuthorizationGateway {
 
     /**
      * Policy and attributes finder modules can not be null. This is a Balana's
-     * request. Policy finder set can not be empty or no policy will ever be
-     * load by the gateway.
+     * request. Policy finder set can not be empty or no policy will be load by
+     * the gateway.
      */
     private void checkPreconditions() {
 	if (policyFinder == null || policyFinder.getModules() == null || policyFinder.getModules().isEmpty())

@@ -16,7 +16,7 @@ import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.PolicyFinderResult;
 
 /**
- * Single tenant PAP.
+ * Single tenant dummy PAP.
  * 
  * @author pezzati
  */
