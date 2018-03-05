@@ -3,9 +3,9 @@ package edu.pezzati.sec.xacml.pap.conf;
 import java.nio.file.Path;
 
 import edu.pezzati.sec.xacml.exception.PolicyConfigurationException;
-import edu.pezzati.sec.xacml.pap.FilesystemPolicyStore;
+import edu.pezzati.sec.xacml.pap.FSysPolicyFinder;
 
-public class FilesystemPolicyStoreConfiguration implements PolicyStoreConfiguration {
+public class FilesystemPolicyStoreConfiguration implements PolicyFinderModuleConfiguration {
 
     private Path policyStore;
 
@@ -18,7 +18,7 @@ public class FilesystemPolicyStoreConfiguration implements PolicyStoreConfigurat
     }
 
     @Override
-    public void handle(FilesystemPolicyStore filesystemPolicyStore) throws PolicyConfigurationException {
+    public void handle(FSysPolicyFinder filesystemPolicyStore) throws PolicyConfigurationException {
 	filesystemPolicyStore.setPolicyStore(getPolicyStore());
     }
 }

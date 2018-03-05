@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Test;
 import org.w3c.dom.Node;
 import org.wso2.balana.Balana;
 import org.wso2.balana.PDP;
@@ -26,10 +27,8 @@ public class ReloadPolicyTest extends XacmlTest {
 
     /**
      * Balana's PDP can't reload a statically provided policy file.
-     * 
-     * @throws Exception
      */
-    //    @Test
+    @Test
     public void reloadPolicyCheck() throws Exception {
 	firstPolicy = new File("src/test/resources/policywithdenyrule");
 	secondPolicy = new File("src/test/resources/policytoreload");
@@ -40,6 +39,7 @@ public class ReloadPolicyTest extends XacmlTest {
 	int expectedResult = XacmlTest.PERMIT;
 	int actualResult = response1.getResults().iterator().next().getDecision();
 	Assert.assertEquals(expectedResult, actualResult);
+
 	System.setProperty(FileBasedPolicyFinderModule.POLICY_DIR_PROPERTY, secondPolicy.getAbsolutePath());
 	pDP = new PDP(Balana.getInstance().getPdpConfig());
 	ResponseCtx response2 = pDP.evaluate(request);

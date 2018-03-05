@@ -17,6 +17,12 @@ As PEP is boundary of XACML, PAP, PIP and PDP are strictly platform dependent.
 ## PDP and how to configure them
 Balana provides a PDP who accept three types of utility modules: `AttributeFinder`, `PolicyFinder` and `ResourceFinder`. I don't find any need of `ResourceFinder` for now, maybe in future.. `AttributeFinder` and `PolicyFinder` are responsible to resolve requests about additional attributes and retreive policies. If an attribute is required, `AttributeFinder` asks for it at every `AttributeFinderModule` it encapsulate. `PolicyFinder` is responsible to find policies your PDP should use. Policies could be stored in a database, your `PolicyFinder` will find them and load into PDP. So, `AttributeFinder` and `PolicyFinder` are both very important and respectively related to PIP and PAP.
 
+### PolicyFinderModule
+This is the type in charge of loading policies.
+
+Why `isRequestSupported()` and `isIdReferenceSupported()` must return true?
+     
+
 ## Policy evaluation
  * Permit:
  * Deny:
