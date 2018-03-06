@@ -1,4 +1,4 @@
-package edu.pezzati.sec.xacml.pap;
+package edu.pezzati.sec.xacml.balana.pap;
 
 import edu.pezzati.sec.xacml.balana.pap.DatabasePolicyFinder;
 

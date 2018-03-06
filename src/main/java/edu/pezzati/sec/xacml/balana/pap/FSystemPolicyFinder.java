@@ -1,4 +1,4 @@
-package edu.pezzati.sec.xacml.pap;
+package edu.pezzati.sec.xacml.balana.pap;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,12 +35,12 @@ import org.wso2.balana.utils.Utils;
 import edu.pezzati.sec.xacml.exception.PolicyConfigurationException;
 import edu.pezzati.sec.xacml.pap.conf.PolicyFinderModuleConfiguration;
 
-public class FSysPolicyFinder extends PolicyFinderModule {
+public class FSystemPolicyFinder extends PolicyFinderModule {
 
     private Path policyStore;
     private HashMap<URI, AbstractPolicy> policies;
 
-    public FSysPolicyFinder() {
+    public FSystemPolicyFinder() {
 	policies = new HashMap<>();
     }
 
