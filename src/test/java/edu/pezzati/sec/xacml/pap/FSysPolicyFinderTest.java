@@ -101,20 +101,41 @@ public class FSysPolicyFinderTest {
 	File from = new File(Thread.currentThread().getContextClassLoader().getResource("policypool/policy1.xml").toURI());
 	File to = new File(temporaryPolicyStore, from.getName());
 	Files.copy(from, to);
-	Thread.sleep(1000);
+	Thread.sleep(2000);
 	int expected = 1;
 	int actual = fsysPolicyStore.getPolicies().size();
 	Assert.assertEquals(expected, actual);
     }
 
     @Test
-    public void asPolicyIsRemovedFromPolicyRepositoryFPSMustUnloadItAsSoonAsPossible() {
-	Assert.fail();
+    public void asPolicyIsRemovedFromPolicyRepositoryFPSMustUnloadItAsSoonAsPossible() throws Exception {
+	filesystemPolicyStoreConfiguration.setPolicyStore(temporaryPolicyStore.toPath());
+	fsysPolicyStore.configure(filesystemPolicyStoreConfiguration);
+	File from = new File(Thread.currentThread().getContextClassLoader().getResource("policypool/policy1.xml").toURI());
+	File to = new File(temporaryPolicyStore, from.getName());
+	Files.copy(from, to);
+	Thread.sleep(2000);
+	to.delete();
+	Thread.sleep(2000);
+	int expected = 0;
+	int actual = fsysPolicyStore.getPolicies().size();
+	Assert.assertEquals(expected, actual);
     }
 
     @Test
-    public void asPolicyIsAddedToPolicyRepositoryFSPMustReplaceTheExistingOldOneWithTheNewOneAsSoonAsPossible() {
-	Assert.fail();
+    public void asPolicyIsAddedToPolicyRepositoryFSPMustReplaceTheExistingOldOneWithTheNewOneAsSoonAsPossible() throws Exception {
+	filesystemPolicyStoreConfiguration.setPolicyStore(temporaryPolicyStore.toPath());
+	fsysPolicyStore.configure(filesystemPolicyStoreConfiguration);
+	File from1 = new File(Thread.currentThread().getContextClassLoader().getResource("policypool/policy1.xml").toURI());
+	File from2 = new File(Thread.currentThread().getContextClassLoader().getResource("policypool/policy3.xml").toURI());
+	File to = new File(temporaryPolicyStore, from1.getName());
+	Files.copy(from1, to);
+	Thread.sleep(2000);
+	Files.copy(from2, to);
+	Thread.sleep(2000);
+	int expected = 1;
+	int actual = fsysPolicyStore.getPolicies().size();
+	Assert.assertEquals(expected, actual);
     }
 
     @Test
