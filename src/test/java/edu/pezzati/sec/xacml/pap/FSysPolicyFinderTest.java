@@ -18,7 +18,6 @@ import edu.pezzati.sec.xacml.exception.PolicyConfigurationException;
 import edu.pezzati.sec.xacml.exception.PolicyException;
 import edu.pezzati.sec.xacml.pap.conf.FilesystemPolicyStoreConfiguration;
 import edu.pezzati.sec.xacml.pap.conf.PolicyFinderModuleConfiguration;
-import net.jodah.concurrentunit.Waiter;
 
 public class FSysPolicyFinderTest {
 
@@ -96,22 +95,25 @@ public class FSysPolicyFinderTest {
     }
 
     @Test
-    public void asPolicyIsAddedToPolicyRepositoryFPSMustLoadItImmediately() throws Exception {
-	Waiter wait = new Waiter();
+    public void asPolicyIsAddedToPolicyRepositoryFPSMustLoadItAsSoonAsPossible() throws Exception {
 	filesystemPolicyStoreConfiguration.setPolicyStore(temporaryPolicyStore.toPath());
 	fsysPolicyStore.configure(filesystemPolicyStoreConfiguration);
 	File from = new File(Thread.currentThread().getContextClassLoader().getResource("policypool/policy1.xml").toURI());
 	File to = new File(temporaryPolicyStore, from.getName());
 	Files.copy(from, to);
+	Thread.sleep(1000);
 	int expected = 1;
 	int actual = fsysPolicyStore.getPolicies().size();
-	//	Assert.assertEquals(expected, actual);
-	wait.await();
-	wait.assertEquals(expected, actual);
+	Assert.assertEquals(expected, actual);
     }
 
     @Test
-    public void asPolicyIsRemovedFromPolicyRepositoryFPSMustUnloadItImmediately() {
+    public void asPolicyIsRemovedFromPolicyRepositoryFPSMustUnloadItAsSoonAsPossible() {
+	Assert.fail();
+    }
+
+    @Test
+    public void asPolicyIsAddedToPolicyRepositoryFSPMustReplaceTheExistingOldOneWithTheNewOneAsSoonAsPossible() {
 	Assert.fail();
     }
 
