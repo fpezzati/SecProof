@@ -15,13 +15,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.wso2.balana.AbstractPolicy;
 import org.wso2.balana.MatchResult;
+import org.wso2.balana.ParsingException;
 import org.wso2.balana.Policy;
 import org.wso2.balana.PolicyMetaData;
 import org.wso2.balana.VersionConstraints;
@@ -31,6 +37,7 @@ import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.PolicyFinderResult;
 import org.wso2.balana.utils.Utils;
+import org.xml.sax.SAXException;
 
 import edu.pezzati.sec.xacml.exception.PolicyConfigurationException;
 import edu.pezzati.sec.xacml.pap.conf.PolicyFinderModuleConfiguration;
@@ -39,6 +46,8 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 
     private Path policyStore;
     private HashMap<URI, AbstractPolicy> policies;
+    private ExecutorService watcherExecutor;
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     public FSystemPolicyFinder() {
 	policies = new HashMap<>();
@@ -50,8 +59,8 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 	policyStoreConfiguration.handle(this);
 	if (this.policyStore == null || Files.notExists(policyStore))
 	    throw new PolicyConfigurationException();
-
-	Thread t = new Thread() {
+	watcherExecutor = Executors.newSingleThreadExecutor();
+	watcherExecutor.execute(new Runnable() {
 	    @Override
 	    public void run() {
 		try (WatchService watcher = policyStore.getFileSystem().newWatchService();) {
@@ -61,32 +70,35 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 			WatchKey key = null;
 			try {
 			    key = watcher.take();
+			    handleEvents(key);
 			} catch (InterruptedException e) {
-			    return;
-			}
-			for (WatchEvent<?> event : key.pollEvents()) {
-			    if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-				AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
-				getPolicies().put(((Path) event.context()).toUri(), policy);
-			    } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-				getPolicies().remove(((Path) event.context()).toString());
-			    } else if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
-				AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
-				getPolicies().put(((Path) event.context()).toUri(), policy);
-			    }
-			    if (!key.reset()) {
-				break;
-			    }
+			    log.warn("WatchService interrupted while listening for events.", e);
+			} catch (ParserConfigurationException | SAXException | IOException | ParsingException e) {
+			    log.warn("WatchService encounter a problem processing event", e);
 			}
 		    }
-		} catch (IOException e) {
-		    e.printStackTrace();
 		} catch (Exception e) {
-		    e.printStackTrace();
+		    log.error("Error while processing events. Service is down.", e);
 		}
 	    }
-	};
-	t.start();
+	});
+    }
+
+    public void handleEvents(WatchKey key) throws ParserConfigurationException, SAXException, IOException, ParsingException {
+	for (WatchEvent<?> event : key.pollEvents()) {
+	    if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+		AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
+		getPolicies().put(((Path) event.context()).toUri(), policy);
+	    } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+		getPolicies().remove(((Path) event.context()).toString());
+	    } else if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
+		AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
+		getPolicies().put(((Path) event.context()).toUri(), policy);
+	    }
+	    if (!key.reset()) {
+		break;
+	    }
+	}
     }
 
     public void setPolicyStore(Path policyStore) {
@@ -144,7 +156,7 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 	return policies;
     }
 
-    private Policy getPolicy(File policyFile) throws Exception {
+    private Policy getPolicy(File policyFile) throws ParserConfigurationException, SAXException, IOException, ParsingException {
 	DocumentBuilderFactory factory = Utils.getSecuredDocumentBuilderFactory();
 	factory.setIgnoringComments(true);
 	factory.setNamespaceAware(true);
