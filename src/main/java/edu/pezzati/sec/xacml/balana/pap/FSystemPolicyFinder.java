@@ -90,7 +90,7 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 		AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
 		getPolicies().put(((Path) event.context()).toUri(), policy);
 	    } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-		getPolicies().remove(((Path) event.context()).toString());
+		getPolicies().remove(((Path) event.context()).toUri());
 	    } else if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
 		AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
 		getPolicies().put(((Path) event.context()).toUri(), policy);

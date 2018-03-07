@@ -110,9 +110,10 @@ public class FSystemPolicyFinderTest {
 
     @Test
     public void asPolicyIsAddedToPolicyRepositoryFPSMustLoadItAsSoonAsPossible() throws Exception {
-	filesystemPolicyStoreConfiguration.setPolicyStore(temporaryPolicyStore.toPath());
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
 	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
-	String expectedPath = "policyfile1.xml";
+	String expectedPath = "policy1.xml";
 	Path path = Mockito.mock(Path.class);
 	Mockito.when(path.toString()).thenReturn(expectedPath);
 	WatchEvent<Path> event = Mockito.mock(WatchEvent.class);
@@ -130,9 +131,10 @@ public class FSystemPolicyFinderTest {
 
     @Test
     public void asPolicyIsRemovedFromPolicyRepositoryFPSMustUnloadItAsSoonAsPossible() throws Exception {
-	filesystemPolicyStoreConfiguration.setPolicyStore(temporaryPolicyStore.toPath());
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
 	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
-	String expectedPath = "policyfile1.xml";
+	String expectedPath = "policy1.xml";
 	Path path = Mockito.mock(Path.class);
 	Mockito.when(path.toString()).thenReturn(expectedPath);
 	WatchEvent<Path> addFileEvent = Mockito.mock(WatchEvent.class);
@@ -162,9 +164,10 @@ public class FSystemPolicyFinderTest {
 
     @Test
     public void asPolicyIsAddedToPolicyRepositoryFSPMustReplaceTheExistingOldOneWithTheNewOneAsSoonAsPossible() throws Exception {
-	filesystemPolicyStoreConfiguration.setPolicyStore(temporaryPolicyStore.toPath());
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
 	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
-	String expectedPath = "policyfile1.xml";
+	String expectedPath = "policy1.xml";
 	Path path = Mockito.mock(Path.class);
 	Mockito.when(path.toString()).thenReturn(expectedPath);
 	WatchEvent<Path> addFileEvent = Mockito.mock(WatchEvent.class);
