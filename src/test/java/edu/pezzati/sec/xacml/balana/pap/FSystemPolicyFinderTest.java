@@ -17,7 +17,6 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -182,11 +181,11 @@ public class FSystemPolicyFinderTest {
 	int actual = fsysPolicyFinder.getPolicies().size();
 	Assert.assertEquals(expected, actual);
 
-	WatchEvent<Path> removeFileEvent = Mockito.mock(WatchEvent.class);
-	Mockito.when(removeFileEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_MODIFY);
-	Mockito.when(removeFileEvent.context()).thenReturn(path);
+	WatchEvent<Path> modifyFileEvent = Mockito.mock(WatchEvent.class);
+	Mockito.when(modifyFileEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_MODIFY);
+	Mockito.when(modifyFileEvent.context()).thenReturn(path);
 	List<WatchEvent<?>> removeFileEvents = new ArrayList<>();
-	removeFileEvents.add(removeFileEvent);
+	removeFileEvents.add(modifyFileEvent);
 	WatchKey removeFileKey = Mockito.mock(WatchKey.class);
 	Mockito.when(removeFileKey.pollEvents()).thenReturn(removeFileEvents);
 	fsysPolicyFinder.handleEvents(removeFileKey);
@@ -195,21 +194,104 @@ public class FSystemPolicyFinderTest {
 	Assert.assertEquals(expected, actual);
     }
 
-    @Ignore
     @Test
-    public void fPSMustRejectNonPolicyFilesAndCarryOn() {
+    public void fPSMustRejectNonPolicyFilesAndCarryOn() throws Exception {
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
+	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
+	String expectedPath = "policy.wrong.xml";
+	Path path = Mockito.mock(Path.class);
+	Mockito.when(path.toString()).thenReturn(expectedPath);
+	WatchEvent<Path> addFileEvent = Mockito.mock(WatchEvent.class);
+	Mockito.when(addFileEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
+	Mockito.when(addFileEvent.context()).thenReturn(path);
+	List<WatchEvent<?>> addFileEvents = new ArrayList<>();
+	addFileEvents.add(addFileEvent);
+	WatchKey addFileKey = Mockito.mock(WatchKey.class);
+	Mockito.when(addFileKey.pollEvents()).thenReturn(addFileEvents);
+	fsysPolicyFinder.handleEvents(addFileKey);
+	int expected = 0;
+	int actual = fsysPolicyFinder.getPolicies().size();
+	Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void fSPCanWorkCorrectlyWithoutSpecifyingAFilter() throws Exception {
+	String regex = null;
+	fsysPolicyFinder.setRegexFilter(regex);
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
+	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
+	Assert.assertNull(fsysPolicyFinder.getRegexFilter());
+    }
+
+    @Test
+    public void fSPIgnoresEventsAboutFilesWhoDoesNotMatchFilter() throws Exception {
+	String regex = "^\\w+\\.balana\\.\\w+\\.xml$";
+	fsysPolicyFinder.setRegexFilter(regex);
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
+	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
+	String expectedPath = "policy1.xml";
+	Path path = Mockito.mock(Path.class);
+	Mockito.when(path.toString()).thenReturn(expectedPath);
+	WatchEvent<Path> addFileEvent = Mockito.mock(WatchEvent.class);
+	Mockito.when(addFileEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
+	Mockito.when(addFileEvent.context()).thenReturn(path);
+	List<WatchEvent<?>> addFileEvents = new ArrayList<>();
+	addFileEvents.add(addFileEvent);
+	WatchKey addFileKey = Mockito.mock(WatchKey.class);
+	Mockito.when(addFileKey.pollEvents()).thenReturn(addFileEvents);
+	fsysPolicyFinder.handleEvents(addFileKey);
+	int expected = 0;
+	int actual = fsysPolicyFinder.getPolicies().size();
+	Assert.assertEquals(expected, actual);
+
+	WatchEvent<Path> modifyFileEvent = Mockito.mock(WatchEvent.class);
+	Mockito.when(modifyFileEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_MODIFY);
+	Mockito.when(modifyFileEvent.context()).thenReturn(path);
+	List<WatchEvent<?>> removeFileEvents = new ArrayList<>();
+	removeFileEvents.add(modifyFileEvent);
+	WatchKey removeFileKey = Mockito.mock(WatchKey.class);
+	Mockito.when(removeFileKey.pollEvents()).thenReturn(removeFileEvents);
+	fsysPolicyFinder.handleEvents(removeFileKey);
+	expected = 0;
+	actual = fsysPolicyFinder.getPolicies().size();
+	Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void fSPRaisesAnExceptionWhenIsAskedToFindPolicyByNullIdReference() {
 	Assert.fail();
     }
 
-    @Ignore
     @Test
-    public void fSPCanWorkCorrectlyWithoutSpecifyingAFilter() {
+    public void fSPReturnsAnEmptyResultWhenIsAskedToFindPolicyByNonExistingIdReference() {
 	Assert.fail();
     }
 
-    @Ignore
     @Test
-    public void fSPIgnoresEventsAboutFilesWhoDoesNotMatchFilter() {
+    public void fSPReturnsOnlyAPolicyWhenIsAskedToFindPolicyByExistingIdReference() {
+	Assert.fail();
+    }
+
+    @Test
+    public void fSPRaisesANullPontierExceptionWhenIsAskedToFindPoliciesByNullContext() {
+	Assert.fail();
+    }
+
+    @Test
+    public void fSPReturnsAnEmptyResultSetWhenIsAskedToFindPolicyByEmptyContext() {
+	Assert.fail();
+    }
+
+    @Test
+    public void fSPReturnsAnEmptyResultSetWhenIsAskedToFindPoliciesWhoDontMatchTheGivenContext() {
+	Assert.fail();
+    }
+
+    @Test
+    public void fSPReturnsPoliciesWhenTheyMatchGivenContext() {
 	Assert.fail();
     }
 }

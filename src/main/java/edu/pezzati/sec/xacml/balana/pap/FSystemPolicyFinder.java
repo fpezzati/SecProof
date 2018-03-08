@@ -48,6 +48,7 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
     private HashMap<URI, AbstractPolicy> policies;
     private ExecutorService watcherExecutor;
     private Logger log = LoggerFactory.getLogger(getClass());
+    private String regex;
 
     public FSystemPolicyFinder() {
 	policies = new HashMap<>();
@@ -73,8 +74,8 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 			    handleEvents(key);
 			} catch (InterruptedException e) {
 			    log.warn("WatchService interrupted while listening for events.", e);
-			} catch (ParserConfigurationException | SAXException | IOException | ParsingException e) {
-			    log.warn("WatchService encounter a problem processing event", e);
+			} catch (ParserConfigurationException | IOException e) {
+			    log.error("WatchService encounter a problem processing event", e);
 			}
 		    }
 		} catch (Exception e) {
@@ -84,21 +85,34 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 	});
     }
 
-    public void handleEvents(WatchKey key) throws ParserConfigurationException, SAXException, IOException, ParsingException {
+    public void handleEvents(WatchKey key) throws ParserConfigurationException, IOException {
 	for (WatchEvent<?> event : key.pollEvents()) {
-	    if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-		AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
-		getPolicies().put(((Path) event.context()).toUri(), policy);
-	    } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-		getPolicies().remove(((Path) event.context()).toUri());
-	    } else if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
-		AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
-		getPolicies().put(((Path) event.context()).toUri(), policy);
-	    }
-	    if (!key.reset()) {
-		break;
+	    try {
+		if (!doesPolicyFileMatchesRegexFilter(((Path) event.context())))
+		    break;
+		if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+		    AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
+		    getPolicies().put(((Path) event.context()).toUri(), policy);
+		} else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+		    getPolicies().remove(((Path) event.context()).toUri());
+		} else if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
+		    AbstractPolicy policy = getPolicy(new File(policyStore.toFile(), ((Path) event.context()).toString()));
+		    getPolicies().put(((Path) event.context()).toUri(), policy);
+		}
+	    } catch (SAXException | ParsingException e) {
+		log.warn("WatchService encounter a problem processing event", e);
+	    } finally {
+		if (!key.reset()) {
+		    break;
+		}
 	    }
 	}
+    }
+
+    private boolean doesPolicyFileMatchesRegexFilter(Path path) {
+	if (getRegexFilter() == null || getRegexFilter().isEmpty())
+	    return true;
+	return path.toString().matches(getRegexFilter());
     }
 
     public void setPolicyStore(Path policyStore) {
@@ -166,5 +180,13 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 	Document doc = db.parse(stream);
 	Policy policy = Policy.getInstance(doc.getDocumentElement());
 	return policy;
+    }
+
+    public void setRegexFilter(String regex) {
+	this.regex = regex;
+    }
+
+    public String getRegexFilter() {
+	return regex;
     }
 }
