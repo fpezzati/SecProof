@@ -40,6 +40,7 @@ import org.wso2.balana.utils.Utils;
 import org.xml.sax.SAXException;
 
 import edu.pezzati.sec.xacml.exception.PolicyConfigurationException;
+import edu.pezzati.sec.xacml.pap.conf.FilesystemPolicyStoreConfiguration;
 import edu.pezzati.sec.xacml.pap.conf.PolicyFinderModuleConfiguration;
 
 public class FSystemPolicyFinder extends PolicyFinderModule {
@@ -55,12 +56,16 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
     }
 
     public void configure(PolicyFinderModuleConfiguration policyStoreConfiguration) throws PolicyConfigurationException {
-	if (policyStoreConfiguration == null)
+	if (policyStoreConfiguration == null || !(policyStoreConfiguration.getClass().equals(FilesystemPolicyStoreConfiguration.class)))
 	    throw new PolicyConfigurationException();
 	policyStoreConfiguration.handle(this);
 	if (this.policyStore == null || Files.notExists(policyStore))
 	    throw new PolicyConfigurationException();
 	watcherExecutor = Executors.newSingleThreadExecutor();
+    }
+
+    public void start() throws IOException {
+	getFilesOnce();
 	watcherExecutor.execute(new Runnable() {
 	    @Override
 	    public void run() {
@@ -81,6 +86,23 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 		} catch (Exception e) {
 		    log.error("Error while processing events. Service is down.", e);
 		}
+	    }
+	});
+    }
+
+    public void stop() {
+	if (watcherExecutor != null)
+	    watcherExecutor.shutdown();
+    }
+
+    private void getFilesOnce() throws IOException {
+	getPolicies().clear();
+	Files.walk(policyStore).filter(file -> file.getFileName().toString().matches(getRegexFilter())).forEach(file -> {
+	    try {
+		log.info(file.getFileName().toString());
+		getPolicies().put(file.toUri(), getPolicy(new File(policyStore.toFile(), file.getFileName().toString())));
+	    } catch (Exception e) {
+		log.warn("WatchService encounter a problem processing event", e);
 	    }
 	});
     }

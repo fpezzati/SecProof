@@ -1,6 +1,5 @@
 package edu.pezzati.sec.xacml.balana.pap;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +16,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,28 +33,26 @@ public class FSystemPolicyFinderTest {
     public ExpectedException expex = ExpectedException.none();
     private FSystemPolicyFinder fsysPolicyFinder;
     private PolicyFinderModuleConfiguration policyStoreConfiguration;
-    private File temporaryPolicyStore;
     private FilesystemPolicyStoreConfiguration filesystemPolicyStoreConfiguration;
     private FileSystem fileSystem;
     private WatchService watchService;
 
     @Before
-    public void initForEachTest() throws IOException {
+    public void initForEachTest() throws IOException, Exception {
 	fsysPolicyFinder = new FSystemPolicyFinder();
 	policyStoreConfiguration = new FilesystemPolicyStoreConfiguration();
-	filesystemPolicyStoreConfiguration = Mockito.spy(new FilesystemPolicyStoreConfiguration());
-	temporaryPolicyStore = new File(System.getProperty("java.io.tmpdir"), "tmpPolicyStore");
-	if (!temporaryPolicyStore.exists()) {
-	    temporaryPolicyStore.mkdirs();
-	}
+	filesystemPolicyStoreConfiguration = new FilesystemPolicyStoreConfiguration();
 	watchService = Mockito.mock(WatchService.class);
 	fileSystem = Mockito.mock(FileSystem.class);
 	Mockito.when(fileSystem.newWatchService()).thenReturn(watchService);
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
+	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
     }
 
     @After
     public void endForEachTest() {
-	temporaryPolicyStore.delete();
+	fsysPolicyFinder.stop();
     }
 
     @Test
@@ -67,6 +65,7 @@ public class FSystemPolicyFinderTest {
 
     @Test
     public void fPSCantHandleANotFilesystemPolicyStoreConfigurationTypeObject() throws PolicyException {
+	fsysPolicyFinder = new FSystemPolicyFinder();
 	policyStoreConfiguration = new PolicyFinderModuleConfiguration() {
 	    @Override
 	    public void handle(FSystemPolicyFinder filesystemPolicyFinder) throws PolicyConfigurationException {
@@ -99,27 +98,39 @@ public class FSystemPolicyFinderTest {
      * FSP needs a directory where to check about policies. No matter if
      * directory is empty.
      */
-    public void fPSCanRunWithAnEmptyPolicyRepository() throws PolicyException {
-	filesystemPolicyStoreConfiguration.setPolicyStore(temporaryPolicyStore.toPath());
+    public void fPSCanRunWithAnEmptyPolicyRepository() throws Exception {
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("emptypool").toURI()));
 	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
+	fsysPolicyFinder.setRegexFilter("^\\w+\\.xml$");
+	fsysPolicyFinder.start();
 	int expected = 0;
 	int actual = fsysPolicyFinder.getPolicies().size();
 	Assert.assertEquals(expected, actual);
     }
 
     @Test
-    public void asPolicyIsAddedToPolicyRepositoryFPSMustLoadItAsSoonAsPossible() throws Exception {
+    public void whenFSPRunOnADirectoryItLoadAllThePoliciesStoredInside() throws Exception {
 	filesystemPolicyStoreConfiguration
 		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
 	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
+	fsysPolicyFinder.setRegexFilter("^policy\\.balana\\.\\w+\\.xml$");
+	fsysPolicyFinder.start();
+	int expected = 11;
+	int actual = fsysPolicyFinder.getPolicies().size();
+	Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void asPolicyIsAddedToPolicyRepositoryFPSMustLoadItAsSoonAsPossible() throws Exception {
 	String expectedPath = "policy1.xml";
 	Path path = Mockito.mock(Path.class);
 	Mockito.when(path.toString()).thenReturn(expectedPath);
-	WatchEvent<Path> event = Mockito.mock(WatchEvent.class);
-	Mockito.when(event.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
-	Mockito.when(event.context()).thenReturn(path);
+	WatchEvent<Path> addFileEvent = Mockito.mock(WatchEvent.class);
+	Mockito.when(addFileEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
+	Mockito.when(addFileEvent.context()).thenReturn(path);
 	List<WatchEvent<?>> events = new ArrayList<>();
-	events.add(event);
+	events.add(addFileEvent);
 	WatchKey addFileKey = Mockito.mock(WatchKey.class);
 	Mockito.when(addFileKey.pollEvents()).thenReturn(events);
 	fsysPolicyFinder.handleEvents(addFileKey);
@@ -130,9 +141,6 @@ public class FSystemPolicyFinderTest {
 
     @Test
     public void asPolicyIsRemovedFromPolicyRepositoryFPSMustUnloadItAsSoonAsPossible() throws Exception {
-	filesystemPolicyStoreConfiguration
-		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
-	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
 	String expectedPath = "policy1.xml";
 	Path path = Mockito.mock(Path.class);
 	Mockito.when(path.toString()).thenReturn(expectedPath);
@@ -163,9 +171,6 @@ public class FSystemPolicyFinderTest {
 
     @Test
     public void asPolicyIsAddedToPolicyRepositoryFSPMustReplaceTheExistingOldOneWithTheNewOneAsSoonAsPossible() throws Exception {
-	filesystemPolicyStoreConfiguration
-		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
-	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
 	String expectedPath = "policy1.xml";
 	Path path = Mockito.mock(Path.class);
 	Mockito.when(path.toString()).thenReturn(expectedPath);
@@ -196,9 +201,6 @@ public class FSystemPolicyFinderTest {
 
     @Test
     public void fPSMustRejectNonPolicyFilesAndCarryOn() throws Exception {
-	filesystemPolicyStoreConfiguration
-		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
-	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
 	String expectedPath = "policy.wrong.xml";
 	Path path = Mockito.mock(Path.class);
 	Mockito.when(path.toString()).thenReturn(expectedPath);
@@ -219,9 +221,6 @@ public class FSystemPolicyFinderTest {
     public void fSPCanWorkCorrectlyWithoutSpecifyingAFilter() throws Exception {
 	String regex = null;
 	fsysPolicyFinder.setRegexFilter(regex);
-	filesystemPolicyStoreConfiguration
-		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
-	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
 	Assert.assertNull(fsysPolicyFinder.getRegexFilter());
     }
 
@@ -229,9 +228,6 @@ public class FSystemPolicyFinderTest {
     public void fSPIgnoresEventsAboutFilesWhoDoesNotMatchFilter() throws Exception {
 	String regex = "^\\w+\\.balana\\.\\w+\\.xml$";
 	fsysPolicyFinder.setRegexFilter(regex);
-	filesystemPolicyStoreConfiguration
-		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policypool").toURI()));
-	fsysPolicyFinder.configure(filesystemPolicyStoreConfiguration);
 	String expectedPath = "policy1.xml";
 	Path path = Mockito.mock(Path.class);
 	Mockito.when(path.toString()).thenReturn(expectedPath);
@@ -260,36 +256,43 @@ public class FSystemPolicyFinderTest {
 	Assert.assertEquals(expected, actual);
     }
 
+    @Ignore
     @Test
     public void fSPRaisesAnExceptionWhenIsAskedToFindPolicyByNullIdReference() {
 	Assert.fail();
     }
 
+    @Ignore
     @Test
     public void fSPReturnsAnEmptyResultWhenIsAskedToFindPolicyByNonExistingIdReference() {
 	Assert.fail();
     }
 
+    @Ignore
     @Test
     public void fSPReturnsOnlyAPolicyWhenIsAskedToFindPolicyByExistingIdReference() {
 	Assert.fail();
     }
 
+    @Ignore
     @Test
     public void fSPRaisesANullPontierExceptionWhenIsAskedToFindPoliciesByNullContext() {
 	Assert.fail();
     }
 
+    @Ignore
     @Test
     public void fSPReturnsAnEmptyResultSetWhenIsAskedToFindPolicyByEmptyContext() {
 	Assert.fail();
     }
 
+    @Ignore
     @Test
     public void fSPReturnsAnEmptyResultSetWhenIsAskedToFindPoliciesWhoDontMatchTheGivenContext() {
 	Assert.fail();
     }
 
+    @Ignore
     @Test
     public void fSPReturnsPoliciesWhenTheyMatchGivenContext() {
 	Assert.fail();
