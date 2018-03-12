@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,6 +31,7 @@ import org.wso2.balana.MatchResult;
 import org.wso2.balana.ParsingException;
 import org.wso2.balana.Policy;
 import org.wso2.balana.PolicyMetaData;
+import org.wso2.balana.PolicySet;
 import org.wso2.balana.VersionConstraints;
 import org.wso2.balana.ctx.EvaluationCtx;
 import org.wso2.balana.ctx.Status;
@@ -97,14 +99,23 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 
     private void getFilesOnce() throws IOException {
 	getPolicies().clear();
-	Files.walk(policyStore).filter(file -> file.getFileName().toString().matches(getRegexFilter())).forEach(file -> {
-	    try {
-		log.info(file.getFileName().toString());
-		getPolicies().put(file.toUri(), getPolicy(new File(policyStore.toFile(), file.getFileName().toString())));
-	    } catch (Exception e) {
-		log.warn("WatchService encounter a problem processing event", e);
-	    }
-	});
+	try (Stream<Path> policies = Files.walk(policyStore)) {
+	    policies.filter(file -> {
+		if (Files.isDirectory(file))
+		    return false;
+		if (getRegexFilter() != null && !getRegexFilter().isEmpty()) {
+		    return file.getFileName().toString().matches(getRegexFilter());
+		}
+		return true;
+	    }).forEach(file -> {
+		try {
+		    log.info(file.getFileName().toString());
+		    getPolicies().put(file.toUri(), getPolicy(new File(policyStore.toFile(), file.getFileName().toString())));
+		} catch (Exception e) {
+		    log.warn("WatchService encounter a problem processing event", e);
+		}
+	    });
+	}
     }
 
     public void handleEvents(WatchKey key) throws ParserConfigurationException, IOException {
@@ -173,7 +184,7 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 	List<AbstractPolicy> matchingPolicies = new ArrayList<>();
 	for (AbstractPolicy policy : getPolicies().values()) {
 	    if (policy.getId().equals(idReference)) {
-		matchingPolicies.add(getPolicies().get(idReference));
+		matchingPolicies.add(policy);
 		break;
 	    }
 	}
@@ -192,7 +203,7 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 	return policies;
     }
 
-    private Policy getPolicy(File policyFile) throws ParserConfigurationException, SAXException, IOException, ParsingException {
+    private AbstractPolicy getPolicy(File policyFile) throws ParserConfigurationException, SAXException, IOException, ParsingException {
 	DocumentBuilderFactory factory = Utils.getSecuredDocumentBuilderFactory();
 	factory.setIgnoringComments(true);
 	factory.setNamespaceAware(true);
@@ -200,8 +211,11 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
 	DocumentBuilder db = factory.newDocumentBuilder();
 	InputStream stream = new FileInputStream(policyFile);
 	Document doc = db.parse(stream);
-	Policy policy = Policy.getInstance(doc.getDocumentElement());
-	return policy;
+	if ("Policy".equals(doc.getDocumentElement().getTagName())) {
+	    return Policy.getInstance(doc.getDocumentElement());
+	} else {
+	    return PolicySet.getInstance(doc.getDocumentElement());
+	}
     }
 
     public void setRegexFilter(String regex) {
