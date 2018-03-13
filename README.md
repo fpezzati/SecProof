@@ -34,10 +34,7 @@ Target tells if given context must be evaluated against current Policy or Rule. 
 When Targets apply to policies or policies set, then it is the `PolicyFinder` (by its `PolicyFinderModules`) who evaluate Target and say that policy worth to be used in evaluation.
 
 ### Target matching
-Target is in charge to check if policy applies to given request.
-anyof
-allof
-attributedesignator.eval pass its type, id, issuer and category to context. Context check if it has any attributes about given category. For any context's attribute matching the given attributedesignator's category, context check if it matches id, type, issuer (if not null) and its value is not null. If so, attribute's value is collected and returned as element of a **bag**.
+Target is in charge to check if policy applies to given request. When target matches the corresponding policy will be pick up and evaluated against a request. Balana's `PolicyFinderModule` iterate over its policies to check if any of them matches request. Each `AbstractPolicy` iterates over its `Target` collection. Each `Target` iterates over its `AnyOfSelection` items. Obviously each `AnyOfSelection` element iterates over its `AllOfSelection` ones who iterate over their `TargetMatch` elements. `TargetMatch` relies on its `AttributeDesignator` who checks request's context against their id, attribute type, issuer and category by passing these values to request's `Context` itself. `Context` check if it has any attributes about given category. For any `Context`'s attribute matching the given `AttributeDesignator`'s category, `Context` check if it matches id, type, issuer (if not null) and its value is not null. If so, attribute's value is collected and returned as element of a **bag**.
 
 
 ## Condition

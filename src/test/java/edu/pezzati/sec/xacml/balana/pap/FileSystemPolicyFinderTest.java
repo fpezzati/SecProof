@@ -36,11 +36,11 @@ import edu.pezzati.sec.xacml.exception.PolicyException;
 import edu.pezzati.sec.xacml.pap.conf.FilesystemPolicyStoreConfiguration;
 import edu.pezzati.sec.xacml.pap.conf.PolicyFinderModuleConfiguration;
 
-public class FSystemPolicyFinderTest {
+public class FileSystemPolicyFinderTest {
 
     @Rule
     public ExpectedException expex = ExpectedException.none();
-    private FSystemPolicyFinder fSP;
+    private FileSystemPolicyFinder fSP;
     private PolicyFinderModuleConfiguration policyStoreConfiguration;
     private FilesystemPolicyStoreConfiguration filesystemPolicyStoreConfiguration;
     private FileSystem fileSystem;
@@ -48,7 +48,7 @@ public class FSystemPolicyFinderTest {
 
     @Before
     public void initForEachTest() throws IOException, Exception {
-	fSP = new FSystemPolicyFinder();
+	fSP = new FileSystemPolicyFinder();
 	policyStoreConfiguration = new FilesystemPolicyStoreConfiguration();
 	filesystemPolicyStoreConfiguration = new FilesystemPolicyStoreConfiguration();
 	watchService = Mockito.mock(WatchService.class);
@@ -74,10 +74,10 @@ public class FSystemPolicyFinderTest {
 
     @Test
     public void fSPCantHandleANotFilesystemPolicyStoreConfigurationTypeObject() throws PolicyException {
-	fSP = new FSystemPolicyFinder();
+	fSP = new FileSystemPolicyFinder();
 	policyStoreConfiguration = new PolicyFinderModuleConfiguration() {
 	    @Override
-	    public void handle(FSystemPolicyFinder filesystemPolicyFinder) throws PolicyConfigurationException {
+	    public void handle(FileSystemPolicyFinder filesystemPolicyFinder) throws PolicyConfigurationException {
 		return;
 	    }
 	};
@@ -128,6 +128,7 @@ public class FSystemPolicyFinderTest {
 	Assert.assertEquals(expected, actual);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void asPolicyIsAddedToPolicyRepositoryFSPMustLoadItAsSoonAsPossible() throws Exception {
 	String expectedPath = "policy1.xml";
@@ -146,6 +147,7 @@ public class FSystemPolicyFinderTest {
 	Assert.assertEquals(expected, actual);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void asPolicyIsRemovedFromPolicyRepositoryFSPMustUnloadItAsSoonAsPossible() throws Exception {
 	String expectedPath = "policy1.xml";
@@ -176,6 +178,7 @@ public class FSystemPolicyFinderTest {
 	Assert.assertEquals(expected, actual);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void asPolicyIsAddedToPolicyRepositoryFSPMustReplaceTheExistingOldOneWithTheNewOneAsSoonAsPossible() throws Exception {
 	String expectedPath = "policy1.xml";
@@ -206,6 +209,7 @@ public class FSystemPolicyFinderTest {
 	Assert.assertEquals(expected, actual);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void fSPMustRejectNonPolicyFilesAndCarryOn() throws Exception {
 	String expectedPath = "policy.wrong.xml";
@@ -231,6 +235,7 @@ public class FSystemPolicyFinderTest {
 	Assert.assertNull(fSP.getRegexFilter());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void fSPIgnoresEventsAboutFilesWhoDoesNotMatchFilter() throws Exception {
 	String regex = "^\\w+\\.balana\\.\\w+\\.xml$";
@@ -282,7 +287,7 @@ public class FSystemPolicyFinderTest {
 	int type = 0;
 	VersionConstraints constraints = null;
 	PolicyMetaData parentMetaData = null;
-	fSP = new FSystemPolicyFinder();
+	fSP = new FileSystemPolicyFinder();
 	filesystemPolicyStoreConfiguration
 		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("simplepolicy").toURI()));
 	fSP.configure(filesystemPolicyStoreConfiguration);
@@ -300,7 +305,7 @@ public class FSystemPolicyFinderTest {
 	int type = 0;
 	VersionConstraints constraints = null;
 	PolicyMetaData parentMetaData = null;
-	fSP = new FSystemPolicyFinder();
+	fSP = new FileSystemPolicyFinder();
 	filesystemPolicyStoreConfiguration
 		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("simplepolicy").toURI()));
 	fSP.configure(filesystemPolicyStoreConfiguration);
@@ -329,7 +334,7 @@ public class FSystemPolicyFinderTest {
 	bag.add(new StringAttribute("notMatching"));
 	EvaluationResult evaluationResult = new EvaluationResult(new BagAttribute(type, bag));
 	Mockito.when(context.getAttribute(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(evaluationResult);
-	fSP = new FSystemPolicyFinder();
+	fSP = new FileSystemPolicyFinder();
 	filesystemPolicyStoreConfiguration
 		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policywithcomplextarget").toURI()));
 	fSP.configure(filesystemPolicyStoreConfiguration);
@@ -351,15 +356,13 @@ public class FSystemPolicyFinderTest {
 	EvaluationResult evaluationResult = new EvaluationResult(new BagAttribute(type, bag));
 	evaluationResult.setMatchResult(new MatchResult(MatchResult.MATCH));
 	Mockito.when(context.getAttribute(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(evaluationResult);
-	fSP = new FSystemPolicyFinder();
+	fSP = new FileSystemPolicyFinder();
 	filesystemPolicyStoreConfiguration
 		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policywithcomplextarget").toURI()));
 	fSP.configure(filesystemPolicyStoreConfiguration);
 	fSP.start();
 	PolicyFinderResult policiesFound = fSP.findPolicy(context);
-	Assert.assertNull(policiesFound.getPolicy());
-	Status policyRequestStatus = policiesFound.getStatus();
-	Assert.assertEquals(1, policyRequestStatus.getCode().size());
-	Assert.assertEquals(Status.STATUS_OK, policyRequestStatus.getCode().get(0));
+	Assert.assertNotNull(policiesFound.getPolicy());
+	Assert.assertNull(policiesFound.getStatus());
     }
 }

@@ -45,7 +45,7 @@ import edu.pezzati.sec.xacml.exception.PolicyConfigurationException;
 import edu.pezzati.sec.xacml.pap.conf.FilesystemPolicyStoreConfiguration;
 import edu.pezzati.sec.xacml.pap.conf.PolicyFinderModuleConfiguration;
 
-public class FSystemPolicyFinder extends PolicyFinderModule {
+public class FileSystemPolicyFinder extends PolicyFinderModule {
 
     private Path policyStore;
     private HashMap<URI, AbstractPolicy> policies;
@@ -53,7 +53,7 @@ public class FSystemPolicyFinder extends PolicyFinderModule {
     private Logger log = LoggerFactory.getLogger(getClass());
     private String regex;
 
-    public FSystemPolicyFinder() {
+    public FileSystemPolicyFinder() {
 	policies = new HashMap<>();
     }
 

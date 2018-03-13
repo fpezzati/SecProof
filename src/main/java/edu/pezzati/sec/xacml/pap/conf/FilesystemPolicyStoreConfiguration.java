@@ -2,7 +2,7 @@ package edu.pezzati.sec.xacml.pap.conf;
 
 import java.nio.file.Path;
 
-import edu.pezzati.sec.xacml.balana.pap.FSystemPolicyFinder;
+import edu.pezzati.sec.xacml.balana.pap.FileSystemPolicyFinder;
 import edu.pezzati.sec.xacml.exception.PolicyConfigurationException;
 
 public class FilesystemPolicyStoreConfiguration implements PolicyFinderModuleConfiguration {
@@ -18,7 +18,7 @@ public class FilesystemPolicyStoreConfiguration implements PolicyFinderModuleCon
     }
 
     @Override
-    public void handle(FSystemPolicyFinder filesystemPolicyFinder) throws PolicyConfigurationException {
+    public void handle(FileSystemPolicyFinder filesystemPolicyFinder) throws PolicyConfigurationException {
 	filesystemPolicyFinder.setPolicyStore(getPolicyStore());
     }
 }
