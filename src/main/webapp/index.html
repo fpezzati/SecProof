@@ -2,14 +2,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="google-signin-client_id"
-	content="yourId">
 <title>Security proof of concept</title>
-<script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body>
-	Security.
-	<div class="g-signin2" data-onsuccess="onSignIn"></div>
+	Security Proof of Concept.
 	<div>
 	<a href="#" onclick="signOut();">Sign out</a>
 	<a href="#" onclick="resourceA();">Resource A</a>
@@ -19,54 +15,4 @@
 	<a href="./srv/logout/now">Logout Server side</a>
 	</div>
 </body>
-<script type="text/javascript">
-		var googletoken;
-		var jwttoken;
-		function onSignIn(googleUser) {
-			var profile = googleUser.getBasicProfile();
-			console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-			console.log('Name: ' + profile.getName());
-			console.log('Image URL: ' + profile.getImageUrl());
-			console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-			
-			googletoken = googleUser.getAuthResponse().id_token;
-			
-			var postReq = new XMLHttpRequest();
-			postReq.onreadystatechange = function() {
-				if(postReq.readyState == XMLHttpRequest.DONE) {
-					if(postReq.status == 200) {
-						jwttoken = JSON.parse(postReq.responseText).token;
-					} else {
-						console.log("something goes not as expected. STATUS = "+postReq.status);
-					}
-				}
-			}
-			postReq.open("POST", "./srv/login/google", true);
-			postReq.setRequestHeader("Accept", "application/json");
-			postReq.send(googletoken);
-		}
-		
-		function signOut() {
-		    var auth2 = gapi.auth2.getAuthInstance();
-		    auth2.signOut().then(function () {
-		      console.log('User signed out.');
-			});
-		    
-		    token = null;
-		}
-		
-		function resourceA() {
-			var getA = new XMLHttpRequest();
-			getA.open("GET", "./srv/boundary/resourceA", true);
-			getA.setRequestHeader("token", jwttoken);
-			getA.send();
-		}
-		
-		function resourceB() {
-			var getB = new XMLHttpRequest();
-			getB.open("GET", "./srv/boundary/resourceB", true);
-			getB.setRequestHeader("token", jwttoken);
-			getB.send();
-		}
-	</script>
 </html>

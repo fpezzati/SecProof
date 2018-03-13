@@ -15,7 +15,6 @@ public class WebBoundary {
 
     @GET
     @Path("/resourceA")
-    @CanAccess
     public Response getResourceA() {
 	return Response.status(200).entity("A").build();
     }

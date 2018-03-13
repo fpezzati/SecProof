@@ -9,18 +9,30 @@
         <param-value>WEB-INF/cxf.config.xml</param-value>
     </context-param>
     <listener>
-        <listener-class>
-              org.springframework.web.context.ContextLoaderListener
-        </listener-class>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
     <listener>
-		<listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
+    	<listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
 	</listener>
+
+	<filter>
+    	<filter-name>ShiroFilter</filter-name>
+    	<filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+    	<filter-name>ShiroFilter</filter-name>
+    	<url-pattern>/srv/*</url-pattern>
+    	<dispatcher>REQUEST</dispatcher>
+    	<dispatcher>FORWARD</dispatcher>
+    	<dispatcher>INCLUDE</dispatcher>
+    	<dispatcher>ERROR</dispatcher>
+	</filter-mapping>
      
     <servlet>
 		<servlet-name>CXFServlet</servlet-name>
 		<display-name>CXF Servlet</display-name>
-		<servlet-class>org.apache.cxf.cdi.CXFCdiServlet</servlet-class>    
+		<servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>    
 		<load-on-startup>1</load-on-startup>
 	</servlet>
     
