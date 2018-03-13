@@ -11,7 +11,6 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -21,8 +20,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import org.wso2.balana.MatchResult;
 import org.wso2.balana.PolicyMetaData;
 import org.wso2.balana.VersionConstraints;
+import org.wso2.balana.attr.AttributeValue;
+import org.wso2.balana.attr.BagAttribute;
+import org.wso2.balana.attr.StringAttribute;
 import org.wso2.balana.cond.EvaluationResult;
 import org.wso2.balana.ctx.EvaluationCtx;
 import org.wso2.balana.ctx.Status;
@@ -319,15 +322,16 @@ public class FSystemPolicyFinderTest {
     }
 
     @Test
-    public void fSPReturnsAnEmptyResultSetWhenIsAskedToFindPolicyByEmptyContext() throws Exception {
+    public void fSPReturnsAnEmptyResultSetWhenIsAskedToFindPoliciesWhoDontMatchTheGivenContext() throws Exception {
 	EvaluationCtx context = Mockito.mock(EvaluationCtx.class);
-	EvaluationResult evaluationResult = new EvaluationResult(
-		new Status(Arrays.asList(new String[] { Status.STATUS_MISSING_ATTRIBUTE })));
+	URI type = new URI("http://www.w3.org/2001/XMLSchema#string");
+	List<AttributeValue> bag = new ArrayList<>();
+	bag.add(new StringAttribute("notMatching"));
+	EvaluationResult evaluationResult = new EvaluationResult(new BagAttribute(type, bag));
 	Mockito.when(context.getAttribute(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(evaluationResult);
-
 	fSP = new FSystemPolicyFinder();
 	filesystemPolicyStoreConfiguration
-		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("simplepolicy").toURI()));
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policywithcomplextarget").toURI()));
 	fSP.configure(filesystemPolicyStoreConfiguration);
 	fSP.start();
 	PolicyFinderResult policiesFound = fSP.findPolicy(context);
@@ -338,12 +342,24 @@ public class FSystemPolicyFinderTest {
     }
 
     @Test
-    public void fSPReturnsAnEmptyResultSetWhenIsAskedToFindPoliciesWhoDontMatchTheGivenContext() {
-	Assert.fail();
-    }
-
-    @Test
-    public void fSPReturnsPoliciesWhenTheyMatchGivenContext() {
-	Assert.fail();
+    public void fSPReturnsPoliciesWhenTheyMatchGivenContext() throws Exception {
+	EvaluationCtx context = Mockito.mock(EvaluationCtx.class);
+	URI type = new URI("http://www.w3.org/2001/XMLSchema#string");
+	List<AttributeValue> bag = new ArrayList<>();
+	bag.add(new StringAttribute("READ"));
+	bag.add(new StringAttribute("RESOURCEA"));
+	EvaluationResult evaluationResult = new EvaluationResult(new BagAttribute(type, bag));
+	evaluationResult.setMatchResult(new MatchResult(MatchResult.MATCH));
+	Mockito.when(context.getAttribute(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(evaluationResult);
+	fSP = new FSystemPolicyFinder();
+	filesystemPolicyStoreConfiguration
+		.setPolicyStore(Paths.get(Thread.currentThread().getContextClassLoader().getResource("policywithcomplextarget").toURI()));
+	fSP.configure(filesystemPolicyStoreConfiguration);
+	fSP.start();
+	PolicyFinderResult policiesFound = fSP.findPolicy(context);
+	Assert.assertNull(policiesFound.getPolicy());
+	Status policyRequestStatus = policiesFound.getStatus();
+	Assert.assertEquals(1, policyRequestStatus.getCode().size());
+	Assert.assertEquals(Status.STATUS_OK, policyRequestStatus.getCode().get(0));
     }
 }
