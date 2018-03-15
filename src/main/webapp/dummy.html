@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	Test page about dummy resources.<br>
+	<button onclick="buildRequest('GET')">GET Dummy</button><br>
+	<button onclick="buildRequest('POST')">POST Dummy</button><br>
+	<button onclick="buildRequest('PUT')">PUT Dummy</button><br>
+	<button onclick="buildRequest('DELETE')">DELETE Dummy</button>
+<script>
+	var xhr = new XMLHttpRequest();
+	
+	function buildRequest(httpVerb) {
+		xhr.open(httpVerb, 'srv/dummy');
+		xhr.onload = function() {
+			console.log(xhr.status + " " +xhr.responseText);
+		};
+		xhr.send();
+	};
+</script>
+</body>
+</html>
