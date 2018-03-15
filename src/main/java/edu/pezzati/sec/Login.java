@@ -17,8 +17,8 @@ public class Login {
 
     @POST
     public Response login(@FormParam("usrname") String username, @FormParam("passwd") String password) {
+	log.info("user {} asks for login.", username);
 	SecurityUtils.getSubject().login(new UsernamePasswordToken(username, password));
-	SecurityUtils.getSubject().getPrincipals().asList().stream().forEach(principal -> log.info(principal.toString()));
 	return Response.ok("you login succesfully").build();
     }
 }
