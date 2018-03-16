@@ -1,10 +1,8 @@
 # Security Proof of Concept
 Here I am exploring Apache Shiro to do authentication and authorization. My aim is to provide a Shiro based solution who can authenticate users who provide the proper JWT token and give them permissions to interact with resources based on their role.
 
-## Authenticating by a JWT token
-
 ## Authorize users
-Shiro provides a great permission based system to provide grants to users in a very fine grained way. Consider this shiro.ini snippet:
+Shiro provides a great permission based system to provide grants to users in a very fine grained way. Users, roles and grants can be conveniently kept in the `shiro.ini` or stored in a `Realm`. Consider this shiro.ini snippet:
 
 ```
 [main]
@@ -51,4 +49,6 @@ Thanks to the Shiro's `rest` filter we can map permissions to HTTP verbs. In the
 | DELETE    | delete       |
 
 So `mantainer` users will be able to do GET, POST, PUT and DELETE while `jrmantainer` users will be able to do only GET and PUT because they are allowed to do `resource:read` and `resource:write` only.
+
+## Authenticating by a JWT token
 

@@ -32,7 +32,7 @@ public class JwtTokenProvider {
 	return jwtParser.parseClaimsJws(token).getBody().getSubject();
     }
 
-    public Claims getClaims(String token) {
+    public Claims getClaims(String token) throws SignatureException, JwtException, Exception {
 	return jwtParser.parseClaimsJws(token).getBody();
     }
 

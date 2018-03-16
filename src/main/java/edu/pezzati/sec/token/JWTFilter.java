@@ -21,14 +21,20 @@ public class JWTFilter extends AccessControlFilter {
 
     @Override
     protected boolean isAccessAllowed(ServletRequest req, ServletResponse res, Object arg2) throws Exception {
-	String token = ((HttpServletRequest) req).getHeader("Authorization");
-	log.info("checking {} token.", token);
-	if (token == null || token.isEmpty() || !token.startsWith("Bearer ")) {
+	try {
+	    String token = ((HttpServletRequest) req).getHeader("Authorization");
+	    log.info("checking {} token.", token);
+	    if (token == null || token.isEmpty() || !token.startsWith("Bearer ")) {
+		return false;
+	    }
+	    token = token.replace("Bearer ", "");
+	    String user = jwtTokenProvider.getUser(token);
+	    log.info("user {} require {}", user, ((HttpServletRequest) req).getRequestURI());
+	    return true;
+	} catch (Exception e) {
+	    log.error("error while checking token.", e);
 	    return false;
 	}
-	token = token.replace("Bearer ", "");
-	jwtTokenProvider.getUser(token);
-	return false;
     }
 
     @Override
