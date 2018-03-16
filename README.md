@@ -41,7 +41,7 @@ Permissions are expressed by semicolon separated values, where the most left val
 
 Shiro's `authc` filter implements a first check where only authenticated users can pass.
 
-Thanks to the Shiro's `rest` filter we can map permissions to HTTP verbs. In the `shiro.ini`, url `/srv/dummy` is bound to Shiro's `authc` and `rest` filters. `rest` checks about user's request HTTP verb mapping to grants this way (I only mention the most relevant ones. see [docs] (https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/web/filter/authz/HttpMethodPermissionFilter.html) for a complete map):
+Thanks to the Shiro's `rest` filter we can map permissions to HTTP verbs. In the `shiro.ini`, url `/srv/dummy` is bound to Shiro's `authc` and `rest` filters. `rest` checks about user's request HTTP verb mapping to grants this way (I only mention the most relevant ones. see [docs](https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/web/filter/authz/HttpMethodPermissionFilter.html) for a complete map):
 
 | HTTP VERB | GRANT's NAME |
 |:----------|:-------------|
