@@ -1,7 +1,9 @@
 package edu.pezzati.sec.token;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 import edu.pezzati.sec.model.Token;
 import edu.pezzati.sec.model.User;
@@ -38,5 +40,12 @@ public class JwtTokenProvider {
 
     public Token refreshToken(Token expiredToken) throws Exception {
 	return null;
+    }
+
+    public String[] getPermissions(String token) throws Exception {
+	Claims claims = getClaims(token);
+	@SuppressWarnings("unchecked")
+	List<String> permissions = claims.get("permissions", ArrayList.class);
+	return permissions.toArray(new String[permissions.size()]);
     }
 }

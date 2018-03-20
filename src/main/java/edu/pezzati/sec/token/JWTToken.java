@@ -6,6 +6,17 @@ public class JWTToken implements AuthenticationToken {
 
     private static final long serialVersionUID = -7611270013703900120L;
     private String principal;
+    private String user;
+    private String[] permissions;
+
+    public JWTToken() {
+    }
+
+    public JWTToken(String principal, String user, String[] permissions) {
+	this.principal = principal;
+	this.user = user;
+	this.setPermissions(permissions);
+    }
 
     @Override
     public Object getPrincipal() {
@@ -18,6 +29,14 @@ public class JWTToken implements AuthenticationToken {
 
     @Override
     public Object getCredentials() {
-	return null;
+	return user;
+    }
+
+    public String[] getPermissions() {
+	return permissions;
+    }
+
+    public void setPermissions(String[] permissions) {
+	this.permissions = permissions;
     }
 }

@@ -5,6 +5,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.AccessControlFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +31,11 @@ public class JWTFilter extends AccessControlFilter {
 	    }
 	    token = token.replace("Bearer ", "");
 	    String user = jwtTokenProvider.getUser(token);
+	    String[] permissions = jwtTokenProvider.getPermissions(token);
 	    log.info("user {} require {}", user, ((HttpServletRequest) req).getRequestURI());
-	    return true;
+	    Subject subject = SecurityUtils.getSubject();
+	    subject.login(new JWTToken(token, user, permissions));
+	    return subject.isAuthenticated();
 	} catch (Exception e) {
 	    log.error("error while checking token.", e);
 	    return false;
