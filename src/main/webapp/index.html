@@ -2,17 +2,34 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Security proof of concept</title>
+<title>Insert title here</title>
 </head>
 <body>
-	Security Proof of Concept.
-	<div>
-	<a href="#" onclick="signOut();">Sign out</a>
-	<a href="#" onclick="resourceA();">Resource A</a>
-	<a href="#" onclick="resourceB();">Resource B</a>
-	</div>
-	<div>
-	<a href="./srv/logout/now">Logout Server side</a>
-	</div>
+	Test page about dummy resources.<br>
+	<button onclick="buildRequest('GET')">GET Dummy</button><br>
+	<button onclick="buildRequest('POST')">POST Dummy</button><br>
+	<button onclick="buildRequest('PUT')">PUT Dummy</button><br>
+	<button onclick="buildRequest('DELETE')">DELETE Dummy</button><br>
+	<div id="response"></div>
+<script>
+	var xhr = new XMLHttpRequest();
+	
+	function buildRequest(httpVerb) {
+		xhr.open(httpVerb, 'srv/dummy');
+		xhr.onload = function() {
+			if (xhr.status == 200) {
+				if(xhr.responseURL.endsWith('/login.html')) {
+					console.log(xhr.status + " " +xhr.responseURL);
+					window.location.replace(xhr.responseURL);
+				} else {
+					document.getElementById('response').innerHTML = xhr.responseText;
+				}
+			} else {
+				console.log(xhr.status + " " +xhr.responseText);
+			}
+		};
+		xhr.send();
+	};
+</script>
 </body>
 </html>

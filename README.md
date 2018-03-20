@@ -1,7 +1,5 @@
 # Security Proof of Concept
-Here I am exploring Apache Shiro to do authentication and authorization. My aim is to provide a Shiro based solution who can authenticate users who provide the proper JWT token and give them permissions to interact with resources based on their role.
-
-## Authenticating by a JWT token
+Here I am exploring Apache Shiro to do authentication and authorization. My aim is to provide a Shiro based solution about users authentication/authorization in a mixed rest/stateful approach, nothing too complex.
 
 ## Authorize users
 Shiro provides a great permission based system to provide grants to users in a very fine grained way. Consider this shiro.ini snippet:
