@@ -4,11 +4,23 @@ Here I am exploring Apache Shiro to do authentication and authorization. My aim 
 ## Authorize users
 Shiro provides a great permission based system to provide grants to users in a very fine grained way. Users, roles and grants can be conveniently kept in the `shiro.ini` or stored in a `Realm`. Consider this shiro.ini snippet:
 
+##WARNING! Update this README.
+##WARNING! I still get a JSESSIONID.
+
+
 ```
+# =======================
+# Shiro INI configuration
+# =======================
+
 [main]
-authc = org.apache.shiro.web.filter.authc.FormAuthenticationFilter
 rest = org.apache.shiro.web.filter.authz.HttpMethodPermissionFilter
-authc.loginUrl = /login.html
+jwt = edu.pezzati.sec.token.JWTFilter
+jwt.loginUrl = /login.html
+jwtCredentialMatcher = edu.pezzati.sec.token.JWTCredentialMatcher
+jwtRealm = edu.pezzati.sec.token.JWTRealm
+jwtRealm.credentialsMatcher = $jwtCredentialMatcher
+securityManager.realm = $jwtRealm
 
 [users]
 user1 = pwd1, admin
@@ -25,14 +37,15 @@ jrmantainer = resource:read, resource:update
 [urls]
 /index.html = anon
 /srv/login = anon
-/srv/boundary/resourceA = authc, perms[resource:read]
-/srv/boundary/resourceB = authc, perms[resource:write]
-/srv/boundary/resourceC = authc, perms[critical:write]
 
-/srv/dummy = authc, rest[resource]
+/srv/boundary/resourceA = jwt, perms[resource:read]
+/srv/boundary/resourceB = jwt, perms[resource:write]
+/srv/boundary/resourceC = jwt, perms[critical:write]
+/srv/boundary/** = jwt
 
-/srv/boundary/** = authc
-/login.html = authc
+/srv/dummy = jwt, rest[resource]
+
+/login.html = jwt
 ```
 
 Permissions are expressed by semicolon separated values, where the most left value is gerarchically more important than the right one. For example the `mantainer` is able to do everithing about `resource` permission while the `jrmantainer` can only read and update resources.
