@@ -10,12 +10,31 @@
 	<button onclick="buildRequest('POST')">POST Dummy</button><br>
 	<button onclick="buildRequest('PUT')">PUT Dummy</button><br>
 	<button onclick="buildRequest('DELETE')">DELETE Dummy</button><br>
-	<div id="response"></div>
+	<div id="response"></div><br>
+	<form id="getatoken" action="srv/token">
+		<label for="username">User name</label>
+		<input type="text" name="username">
+	</form>
+	<button onclick="getToken()">Get your token</button>
 <script>
 	var xhr = new XMLHttpRequest();
 	
+	function getToken() {
+		xhr.open('GET', 'srv/token?username='+document.getElementById("getatoken").elements["username"].value);
+		xhr.onload = function() {
+			if(xhr.status == 200) {
+				var token = xhr.response;
+				localStorage.setItem("shirotoken", token)
+			}
+		}
+		xhr.send();
+	};
+	
 	function buildRequest(httpVerb) {
 		xhr.open(httpVerb, 'srv/dummy');
+		if (localStorage.getItem("shirotoken")) {
+			xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("shirotoken"));
+		}
 		xhr.onload = function() {
 			if (xhr.status == 200) {
 				if(xhr.responseURL.endsWith('/login.html')) {
@@ -26,6 +45,7 @@
 				}
 			} else {
 				console.log(xhr.status + " " +xhr.responseText);
+				document.getElementById('response').innerHTML = xhr.status + " error!";
 			}
 		};
 		xhr.send();

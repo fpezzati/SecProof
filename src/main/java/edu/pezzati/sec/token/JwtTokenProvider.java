@@ -8,6 +8,7 @@ import java.util.List;
 import edu.pezzati.sec.model.Token;
 import edu.pezzati.sec.model.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -26,8 +27,11 @@ public class JwtTokenProvider {
 
     public Token getJwtToken(User user) {
 	Date exp = new Date(System.currentTimeMillis() + tokenLifetime * 1000);
-	return new Token(
-		Jwts.builder().setSubject(user.getUsername()).signWith(SignatureAlgorithm.HS512, jwtSecret).setExpiration(exp).compact());
+	JwtBuilder jwtBuilder = Jwts.builder().setSubject(user.getUsername()).signWith(SignatureAlgorithm.HS512, jwtSecret)
+		.setExpiration(exp);
+	jwtBuilder.claim("permissions", user.getPermissions());
+	Token token = new Token(jwtBuilder.compact());
+	return token;
     }
 
     public String getUser(String token) throws SignatureException, JwtException, Exception {
