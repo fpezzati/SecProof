@@ -7,7 +7,9 @@
 	<jaxrs:server id="sec" basePackages="edu.pezzati.sec" address="/">
 		<jaxrs:providers>
 			<ref bean="secjsonprovider"/>
+			<ref bean="jwtfilter"/>
 		</jaxrs:providers>
 	</jaxrs:server>
 	<bean id="secjsonprovider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+	<bean id="jwtfilter" class="edu.pezzati.sec.token.JwtContainerRequestFilter"/>
 </beans>
